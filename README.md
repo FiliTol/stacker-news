@@ -63,3 +63,4 @@ Stacker news has 5 typologies of posts that we could find + 1 typology which is 
 ### Ideas
 
 - We could truncate the linked links and see to which websites the liks refer to
+- Do we want to consider 'comments' and 'replies to comments' as the same thing? Where 'comment' is a post that replies to the **starting post**, whereas the 'reply' is the comment to a comment (so a comment to a post that is a comment of the original post) etc. If we decided to treat them as equal, then the scraping of comments is basically a simple command in which we take the `<a class="text-reset position-relative" href="/items/<number>`, that is the same for every comment. This html position contains the ID of the comment in the general history of items. If we decided to **not treat them as equal (which is more correct from a network standpoint) we should plan how to crawl the data in a hierarchy.
