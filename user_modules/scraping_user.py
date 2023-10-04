@@ -4,7 +4,7 @@ import re
 import numpy as np
 
 # Fixed value to be returned for missing values or request errors
-NA = np.nan
+NA = None
 
 
 # Function that returns the webpage where the user profile is
