@@ -23,7 +23,7 @@ Stacker news has 5 typologies of posts that we could find + 1 typology which is 
 4. Bounty
 5. Job
 
-- **Post ID** -> it is unique and progressively named starting from 1, which was posted 11/06/2021. **To scrape post data is probably enough to take the URL and loop it from stacker.news/items/1 to stacker.news/items/n** where N is the greater number that you can put there without receiving a 404 response. With this we can then scrape every post page, catching all the posts, users, comments and users that commented, the stacked amounts. Having all the users names we then can scrape trough all the links stacker.news/`username`. This process can let us catch aso all the users (at least all the users that posted at least once.
+- **Post ID** -> it is unique and progressively named starting from 1, which was posted 11/06/2021. **To scrape post data is probably enough to take the URL and loop it from stacker.news/items/1 to stacker.news/items/n** where N is the greater number that you can put there without receiving a 404 response. With this we can then scrape every post page, catching all the posts, users, comments and users that commented, the stacked amounts. Having all the users names we then can scrape trough all the links `https://stacker.news/$username$`. This process can let us catch aso all the users (at least all the users that posted at least once.
 
 > This flow let us skip the process of finding outh the right dynamics for scraping the content behind the 'more' button, since starting from 0 can easily let us scan through all posts.
 
