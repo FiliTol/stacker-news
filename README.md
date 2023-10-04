@@ -51,7 +51,9 @@ Stacker news has 5 typologies of posts that we could find + 1 typology which is 
 
 - Data about the **visitors** is (maybe) retrievable through the linked page in the footer `analytics > visitors` but its aggregated data.
 
-#### Comments structure
+- Stacked amounts in posts and comments are represented in units, but once they reach the thousands they are formatted as `10.5k sats`, for millions sats they are `10.5m sats`.
+
+- #### Comments structure
 
 ![Comments that have replies](images/comment1.png)
 *Comments that have replies*
