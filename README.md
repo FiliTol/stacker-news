@@ -28,7 +28,7 @@ Stacker news has 5 typologies of posts that we could find + 1 typology which is 
 > This flow let us skip the process of finding outh the right dynamics for scraping the content behind the 'more' button, since starting from 0 can easily let us scan through all posts.
 
 - **Post title** -> **title is compulsory**
-- **Boost value** -> 'Boosts allow stackers to increase the ranking of their post upon creation to give their content more visibility.' (from the FAQ)
+- **Boost value** -> 'Boosts allow stackers to increase the ranking of their post upon creation to give their content more visibility.' (from the FAQ) NB-> **I'm not scraping it at the moment** 
 - **Bounty item** -> not all the posts have it. A bounty item is a bounty that the post creator pays to the user that solves its problem/challenge/answers better etc. This amount is retrievable by the green button below the post, where we can both find the amount and the value 'paid' or 'not paid'(?).
 - **Post link** -> users can insert a link as a post. This occupies a specific slot in the post template
 - **amount stacked** -> amount stacked by the post (in sats). This section provides us also a string that indicates how many users donated in total (es 'from 11 stackers > 212 sats')
