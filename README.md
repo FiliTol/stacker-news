@@ -14,7 +14,6 @@ In a 'profile' the user data available are:
 - **Bio** -> User bio. Usually it is the first user post
 - **Items** -> number of posts+comments the user did
 
-
 ### Post data
 
 Stacker news has 5 typologies of posts that we could find + 1 typology which is `comment`. The five typologies are:
