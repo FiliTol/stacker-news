@@ -56,3 +56,18 @@ def detect_item_job(item_code):
             return True
     except:
         return False
+
+
+# Function that returns 'true' if the item is a 'link' item
+def detect_item_link(item_code):
+
+    # Provides TRUE if the item is a link item
+    page = si.get_item_page(item_code)
+    try:
+        collect_link = page.find('a', class_='item_link__4cWVs', target='_blank').get_text()
+        regex_link = r'\bhttps?://\S+'
+        spot_link = re.sub(regex_link, '', collect_link)
+        return True
+    except:
+        return False
+
