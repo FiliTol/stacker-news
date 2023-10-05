@@ -62,7 +62,7 @@ def detect_item_job(item_code):
 def detect_item_link(item_code):
 
     # Provides TRUE if the item is a link item
-    page = si.get_item_page(item_code)
+    page = get_item_page(item_code)
     try:
         collect_link = page.find('a', class_='item_link__4cWVs', target='_blank').get_text()
         regex_link = r'\bhttps?://\S+'
