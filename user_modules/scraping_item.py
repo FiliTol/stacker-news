@@ -15,6 +15,7 @@ def get_item_page(item_code):  # TODO this function could be bundled-in the func
     try:
         url_posts = f'https://stacker.news/items/{item_code}'
         response = requests.get(url_posts)
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         return soup
     except:
@@ -35,3 +36,23 @@ def get_timedate(item_code):
         return timestamp_datetime
     except:
         return NA
+
+
+# Job offers items are identifiable by an 'apply' button.
+# Function that returns 'True' if the item is a job offer.
+def detect_item_job(item_code):
+
+    # Provides TRUE if the item is a Job offer
+    page = get_item_page(item_code)
+    try:
+        collect_button = page.find('a',
+                                   class_='btn btn-primary',
+                                   target='_blank',
+                                   tabindex="0").get_text()
+        regex_apply = r'^mailto:[^@]+@[^@]+\s+via\s+Stacker\s+News$'
+        spot_job = re.sub(regex_apply, '', collect_button)
+
+        if spot_job.strip() == 'apply':
+            return True
+    except:
+        return False
