@@ -16,8 +16,6 @@ from user_modules.scraping_user import (
 # Define a fixed value for missing values or request errors
 NA = None
 
-# Create a test class
-
 
 class TestUserProfileFunctions(unittest.TestCase):
 

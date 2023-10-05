@@ -1,14 +1,14 @@
 from bs4 import BeautifulSoup
 import requests as requests
 import re
-import numpy as np
+
 
 # Fixed value to be returned for missing values or request errors
 NA = None
 
 
 # Function that returns the webpage where the user profile is
-def get_profile(url_page): # TODO this function could be generalized for crawling both user pages and post pages
+def get_profile(name): # TODO this function could be generalized for crawling both user pages and post pages
 
     try:
         # Provided a string returns a bs4.BeautifulSoup object
@@ -26,8 +26,7 @@ def get_total_stacked(name):
     # Provided a string returns an integer
     page = get_profile(name)
     try:
-        nym_tot_stacked = page.find('div',
-                                    class_='mb-2 ms-0 ms-sm-1 user-header_username__bqOV1 text-success').get_text()
+        nym_tot_stacked = page.find('div', class_='mb-2 ms-0 ms-sm-1 user-header_username__bqOV1 text-success').get_text()
         regex_sats = r'[^\d]+'
         nym_tot_stacked = int(re.sub(regex_sats, '', nym_tot_stacked))
         return nym_tot_stacked
@@ -71,3 +70,4 @@ def get_total_items(name):
         return nym_tot_items
     except:
         return NA
+
