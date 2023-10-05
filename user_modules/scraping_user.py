@@ -8,7 +8,8 @@ NA = None
 
 
 # Function that returns the webpage where the user profile is
-def get_profile(name):
+def get_profile(url_page): # TODO this function could be generalized for crawling both user pages and post pages
+
     try:
         # Provided a string returns a bs4.BeautifulSoup object
         url_posts = f'https://stacker.news/{name}'
