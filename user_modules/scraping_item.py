@@ -71,3 +71,27 @@ def detect_item_link(item_code):
     except:
         return False
 
+
+# Function that returns 'true' if the item is a 'link' item
+def detect_item_poll(item_code):
+
+    # Provides TRUE if the item is a poll item
+    page = get_item_page(item_code)
+    try:
+        collect_poll = page.find('div', class_='poll_pollBox__Z9Blt').get_text()
+        return True
+    except:
+        return False
+
+
+# Function that returns 'true' if the item is a 'link'
+def detect_item_bounty(item_code):
+
+    # Provides TRUE if the item is a bounty item
+    page = get_item_page(item_code)
+    try:
+        collect_bounty = page.find('div',
+                                   class_='px-3 py-1 d-inline-block bg-grey-medium rounded text-success').get_text()
+        return True
+    except:
+        return False
