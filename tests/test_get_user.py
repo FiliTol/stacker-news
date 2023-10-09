@@ -1,7 +1,5 @@
 import unittest
 from scripts import user
-import sys
-sys.path.append('/home/filippo/repositories/stacker-news/scripts')  # Replace with the actual path to the 'scripts' module
 
 
 class TestGetProfile(unittest.TestCase):
@@ -15,7 +13,7 @@ class TestGetProfile(unittest.TestCase):
 
     def test_invalid_profile(self):
         # Test with an invalid user profile (non-existent user)
-        profile = user.get_profile('pycananrino')
+        profile = user.get_profile('ycananrino')
         self.assertIsNone(profile)
 
     def test_missing_values(self):
@@ -39,6 +37,7 @@ class TestGetProfile(unittest.TestCase):
         self.assertIsNotNone(profile[2])  # Check if nym_first_item is not None
         self.assertIsNotNone(profile[3])  # Check if nym_ch_streak is not None
         self.assertIsNotNone(profile[4])  # Check if nym_tot_items is not None
+
 
 if __name__ == '__main__':
     unittest.main()
