@@ -1,24 +1,24 @@
 import unittest
-from scripts import user
+from scripts.user import get_profile
 
 
 class TestGetProfile(unittest.TestCase):
 
     def test_valid_profile(self):
         # Test with a valid user profile
-        profile = user.get_profile('pycan')
+        profile = get_profile('pycan')
         self.assertIsNotNone(profile)
         self.assertEqual(len(profile), 5)
         self.assertEqual(profile[0], 'pycan')
 
     def test_invalid_profile(self):
         # Test with an invalid user profile (non-existent user)
-        profile = user.get_profile('ycananrino')
+        profile = get_profile('ycananrino')
         self.assertIsNone(profile)
 
     def test_missing_values(self):
         # Test with a user profile that has missing values
-        profile = user.get_profile('saloon')
+        profile = get_profile('saloon')
         self.assertIsNotNone(profile)
         self.assertEqual(len(profile), 5)
         self.assertEqual(profile[0], 'saloon')
@@ -29,7 +29,7 @@ class TestGetProfile(unittest.TestCase):
 
     def test_profile_with_values(self):
         # Test with a user profile that has all values available
-        profile = user.get_profile('Bitcoin_squared')
+        profile = get_profile('Bitcoin_squared')
         self.assertIsNotNone(profile)
         self.assertEqual(len(profile), 5)
         self.assertEqual(profile[0], 'Bitcoin_squared')
