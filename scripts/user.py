@@ -62,7 +62,7 @@ def save_profile_csv(user_list):
     file_path = "../data/profiles.csv"
     row_head = ["User", "Total stacked", "First item", "Max Cowboy-hat streak", "Total user items"]
 
-    with open("", 'w', encoding='utf_8_sig', newline="") as csvfile:
+    with open(file_path, 'w', encoding='utf_8_sig', newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(row_head)
 
