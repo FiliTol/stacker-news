@@ -1,3 +1,4 @@
+import numpy as np
 from bs4 import BeautifulSoup
 import requests as requests
 import re
