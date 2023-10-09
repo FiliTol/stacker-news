@@ -1,5 +1,8 @@
 import unittest
-from scripts.user import *
+from scripts import user
+import sys
+sys.path.append('/home/filippo/repositories/stacker-news/scripts')  # Replace with the actual path to the 'scripts' module
+
 
 class TestGetProfile(unittest.TestCase):
 
