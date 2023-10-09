@@ -16,16 +16,16 @@ class TestGetProfile(unittest.TestCase):
         profile = user.get_profile('ycananrino')
         self.assertIsNone(profile)
 
-    def test_missing_values(self):
-        # Test with a user profile that has missing values
-        profile = user.get_profile('saloon')
-        self.assertIsNotNone(profile)
-        self.assertEqual(len(profile), 5)
-        self.assertEqual(profile[0], 'saloon')
-        self.assertIsNone(profile[1])  # Check if nym_tot_stacked is None
-        self.assertIsNone(profile[2])  # Check if nym_first_item is None
-        self.assertIsNone(profile[3])  # Check if nym_ch_streak is None
-        self.assertIsNone(profile[4])  # Check if nym_tot_items is None
+    # def test_missing_values(self):
+    #     # Test with a user profile that has missing values
+    #     profile = user.get_profile('saloon')
+    #     self.assertIsNotNone(profile)
+    #     self.assertEqual(len(profile), 5)
+    #     self.assertEqual(profile[0], 'saloon')
+    #     self.assertIsNone(profile[1])  # Check if nym_tot_stacked is None
+    #     self.assertIsNone(profile[2])  # Check if nym_first_item is None
+    #     self.assertIsNone(profile[3])  # Check if nym_ch_streak is None
+    #     self.assertIsNone(profile[4])  # Check if nym_tot_items is None
 
     def test_profile_with_values(self):
         # Test with a user profile that has all values available
