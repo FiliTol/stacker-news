@@ -67,9 +67,12 @@ def save_profile_csv(user_list):
         csvwriter.writerow(row_head)
 
     for i in user_list:
-        profile_data = get_profile(i)
 
-        with open(file_path, 'a', encoding='utf_8_sig', newline="") as csvfile:
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow(profile_data)
+        try:
+            profile_data = get_profile(i)
+            with open(file_path, 'a', encoding='utf_8_sig', newline="") as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerow(profile_data)
+        except:
+            pass
 
