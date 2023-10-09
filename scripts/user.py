@@ -2,6 +2,7 @@ import numpy as np
 from bs4 import BeautifulSoup
 import requests as requests
 import re
+import csv
 
 
 # Fixed value to be returned for missing values or request errors
@@ -52,4 +53,23 @@ def get_profile(name): # TODO this function could be generalized for crawling bo
         nym_tot_items = NA
 
     return [name, nym_tot_stacked, nym_first_item, nym_ch_streak, nym_tot_items]
+
+
+# Function that saves the each profile data in a new line of a csv file
+def save_profile_csv(user_list):
+
+    # Appends every new profile to a csv file in the provided path
+    file_path = "../data/profiles.csv"
+    row_head = ["User", "Total stacked", "First item", "Max Cowboy-hat streak", "Total user items"]
+
+    with open("", 'w', encoding='utf_8_sig', newline="") as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(row_head)
+
+    for i in user_list:
+        profile_data = get_profile(i)
+
+        with open(file_path, 'a', encoding='utf_8_sig', newline="") as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(profile_data)
 
