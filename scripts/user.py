@@ -25,13 +25,13 @@ def get_profile(name): # TODO this function could be generalized for crawling bo
         regex_sats = r'[^\d]+'
         nym_tot_stacked = int(re.sub(regex_sats, '', nym_tot_stacked))
     except:
-        return NA
+        nym_tot_stacked = NA
 
     # Section that returns the first user appearance (measured by the code of the first item created)
     try:
         nym_first_item = soup.find('a', class_='ms-1').get_text()[1:]
     except:
-        return NA
+        nym_first_item = NA
 
     # Section that returns the longest cowboy-hat streak
     # If a user tip 100 sats (or more) in a day it gets a cowboy hat for that day
@@ -40,7 +40,7 @@ def get_profile(name): # TODO this function could be generalized for crawling bo
         regex_ch = r'[^\d]+'
         nym_ch_streak = int(re.sub(regex_ch, '', nym_ch_streak))
     except:
-        return NA
+        nym_ch_streak = NA
 
     # Section that returns the total number of Items created by the user
     try:
@@ -48,5 +48,7 @@ def get_profile(name): # TODO this function could be generalized for crawling bo
         regex_nym_items = r' items\b'
         nym_tot_items = int(re.sub(regex_nym_items, '', nym_tot_items))
     except:
-        return NA
+        nym_tot_items = NA
+
+    return [name, nym_tot_stacked, nym_first_item, nym_ch_streak, nym_tot_items]
 
