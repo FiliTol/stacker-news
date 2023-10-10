@@ -33,7 +33,7 @@ def get_timedate(page):
         timestamp_element = page.find('a', attrs={'title': timestamp_pattern})
         timestamp_match = timestamp_pattern.search(timestamp_element['title']).group(1)
         timestamp_datetime = datetime.strptime(timestamp_match, original_format)
-        return timestamp_datetime
+        return timestamp_datetime.strftime("%Y-%m-%d %H:%M:%S")
     except:
         return NA
 
