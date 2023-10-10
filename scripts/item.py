@@ -24,6 +24,7 @@ def get_item_page(item_code):  # TODO this function could be bundled-in the func
 
 # Function that returns the datetime given an html file where a timestamp is present
 def get_timedate(page):
+
     # Provided a string and a soup, returns a datetime.datetime object
     try:
         timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)')
@@ -101,4 +102,29 @@ def detect_title(item, page):
         return title.get_text()
     except:
         return False
+
+
+# Function that returns the item classification provided the item number and the soup
+def detect_item_type(i, page):
+
+    # Provided an int, soup it returns a string
+    category = NA
+    try:
+        if detect_title(i, page):
+            category = 'post'
+            if detect_item_link(page):
+                category = 'link'
+            elif detect_item_bounty(page):
+                category = 'bounty'
+            elif detect_item_poll(page):
+                category = 'poll'
+            elif detect_item_job(page):
+                category = 'job'
+            else:
+                category = 'discussion'
+        else:
+            category = 'comment'
+        return category
+    except:
+        return NA
 
