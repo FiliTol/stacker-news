@@ -85,8 +85,20 @@ def detect_item_bounty(page):
 
     # Provides TRUE if the item is a bounty item
     try:
-        collect_bounty = page.find('div',
-                                   class_='px-3 py-1 d-inline-block bg-grey-medium rounded text-success').get_text()
+        collect_bounty = page.find('div', class_='px-3 py-1 d-inline-block bg-grey-medium rounded text-success').get_text()
         return True
     except:
         return False
+
+
+# Function that returns true if the item is a post item, meaning that it has a title
+# If an item does not have a title, then it is a comment
+def detect_title(item, page):
+
+    # Provides TRUE if the item has a title, therefore it is a post
+    try:
+        title = page.find('a', class_='item_title__FH7AS text-reset me-2', href=f'/items/{item}')
+        return title.get_text()
+    except:
+        return False
+
