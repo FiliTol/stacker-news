@@ -25,7 +25,7 @@ def get_item_page(item_code):  # TODO this function could be bundled-in the func
 # Function that returns the datetime given an html file where a timestamp is present
 def get_timedate(page):
 
-    # Provided a string and a soup, returns a datetime.datetime object
+    # Provided a string and a soup, returns a datetime object
     try:
         timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)')
         original_format = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -127,4 +127,39 @@ def detect_item_type(i, page):
         return category
     except:
         return NA
+
+
+# Function that scrapes a 'discussion' item
+def scrape_discussion(page):
+
+    # Provided a soup, produces a string then inserted in a csv
+    pass
+
+
+# Function that scrapes a 'link' item
+def scrape_link(page):
+
+    # Provided a soup, produces a string then inserted in a csv
+    pass
+
+
+# Function that scrapes a 'poll' item
+def scrape_poll(page):
+
+    # Provided a soup, produces a string then inserted in a csv
+    pass
+
+
+# Function that scrapes a 'discussion' item
+def scrape_bounty(page):
+
+    # Provided a soup, produces a string then inserted in a csv
+    pass
+
+
+# Function that scrapes a 'comment' item
+def scrape_comment(page):
+
+    # Provided a soup, produces a string then inserted in a csv
+    pass
 
