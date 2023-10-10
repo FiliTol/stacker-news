@@ -130,36 +130,36 @@ def detect_item_type(i, page):
 
 
 # Function that scrapes a 'discussion' item
-def scrape_discussion(page):
+def scrape_discussion():
 
-    # Provided a soup, produces a string then inserted in a csv
+    # Produces a string then inserted in a csv
     pass
 
 
 # Function that scrapes a 'link' item
-def scrape_link(page):
+def scrape_link():
 
-    # Provided a soup, produces a string then inserted in a csv
+    # Produces a string then inserted in a csv
     pass
 
 
 # Function that scrapes a 'poll' item
-def scrape_poll(page):
+def scrape_poll():
 
-    # Provided a soup, produces a string then inserted in a csv
+    # Produces a string then inserted in a csv
     pass
 
 
 # Function that scrapes a 'discussion' item
-def scrape_bounty(page):
+def scrape_bounty():
 
-    # Provided a soup, produces a string then inserted in a csv
+    # Produces a string then inserted in a csv
     pass
 
 
 # Function that scrapes a 'comment' item
-def scrape_comment(page):
+def scrape_comment():
 
-    # Provided a soup, produces a string then inserted in a csv
+    # Produces a string then inserted in a csv
     pass
 
