@@ -127,38 +127,3 @@ def detect_item_type(i, page):
     except:
         return NA
 
-
-# Function that scrapes a 'discussion' item
-def scrape_discussion():
-
-    # Produces a string then inserted in a csv
-    pass
-
-
-# Function that scrapes a 'link' item
-def scrape_link():
-
-    # Produces a string then inserted in a csv
-    pass
-
-
-# Function that scrapes a 'poll' item
-def scrape_poll():
-
-    # Produces a string then inserted in a csv
-    pass
-
-
-# Function that scrapes a 'discussion' item
-def scrape_bounty():
-
-    # Produces a string then inserted in a csv
-    pass
-
-
-# Function that scrapes a 'comment' item
-def scrape_comment():
-
-    # Produces a string then inserted in a csv
-    pass
-
