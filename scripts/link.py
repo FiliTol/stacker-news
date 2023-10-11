@@ -66,7 +66,19 @@ def extract_banner(page):
     return final_banner
 
 
-# Function that extracts the item body from the provided page
+# Function that extracts the main link object from the provided page
+def extract_link(page):
+
+    # Return a list of items provided a soup
+    try:
+        ex_link = page.find('a', class_='item_link__4cWVs', target='_blank', rel="noreferrer noopener")['href']
+    except:
+        ex_link = NA
+
+    return ex_link
+
+
+# Function that extracts the links present in the page (not the main link) if any
 def extract_body_links(page):
 
     # Return a list of items provided a soup
