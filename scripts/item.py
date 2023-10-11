@@ -111,7 +111,6 @@ def detect_item_type(i, page):
     category = NA
     try:
         if detect_title(i, page):
-            category = 'post'
             if detect_item_link(page):
                 category = 'link'
             elif detect_item_bounty(page):

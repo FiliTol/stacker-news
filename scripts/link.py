@@ -120,37 +120,3 @@ def extract_comment_item_code(page):
     except:
         return NA
 
-
-# Function that collects the outputs of all the extraction functions for discussion item
-# def scrape_discussion(item_code, page):
-#
-#     # Produces a string then inserted in a csv
-#     entry = [extract_title(page),
-#              str(item_code),
-#              extract_banner(page),
-#              extract_body_links(page),
-#              extract_comment_stacked(page),
-#              extract_comment_item_code(page)
-#              ]
-#
-#     # Appends every new profile to a csv file in the provided path
-#     file_path = "../data/discussion.csv"
-#     row_head = ["Title",
-#                 "Item code",
-#                 "Banner data",
-#                 "Body links",
-#                 "Sats received by comments",
-#                 "Comments item code",
-#                 ]
-#
-#     with open(file_path, 'w', encoding='utf_8_sig', newline="") as csvfile:
-#         csvwriter = csv.writer(csvfile)
-#         csvwriter.writerow(row_head)
-#
-#     try:
-#         with open(file_path, 'a', encoding='utf_8_sig', newline="") as csvfile:
-#             csvwriter = csv.writer(csvfile)
-#             csvwriter.writerow(entry)
-#     except:
-#         pass
-#     return 'Done'
