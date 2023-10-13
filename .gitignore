@@ -4,3 +4,6 @@
 .Ruserdata
 user_modules/
 trash/
+.idea
+stacker-news.Rproj
+.Rprofile
