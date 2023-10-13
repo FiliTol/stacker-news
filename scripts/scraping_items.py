@@ -11,7 +11,7 @@ import time
 
 # Sampling the items to scrape
 from random import sample
-sampled_items = sample([*range(1,250000)], 100)
+sampled_items = sample([*range(1,250000)], 1000)
 
 # Queries for table insertion
 sql_comment = """
