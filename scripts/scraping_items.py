@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup
 import requests as requests
-from scripts import item, discussion, link, comment, user
-import csv
+import item
+import discussion
+import link
+import comment
 from tqdm import tqdm
 import sqlite3
-import pandas as pd
 import time
 
 
@@ -96,7 +97,7 @@ INSERT OR IGNORE INTO exceptions (
 """
 
 # Create database connection
-conn = sqlite3.connect('../data/stacker_news.sqlite')
+conn = sqlite3.connect('data/stacker_news.sqlite')
 cur = conn.cursor()
 
 # Insert tables into database
