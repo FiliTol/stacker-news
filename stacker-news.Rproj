@@ -13,3 +13,7 @@ RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
 AutoAppendNewline: Yes
+
+PythonType: virtualenv
+PythonVersion: 3.11.5
+PythonPath: venv/bin/python
