@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests as requests
 import re
 from datetime import datetime
-import item
+from scripts import item
 import csv
 
 
@@ -43,7 +43,7 @@ def extract_banner(page):
     for b in partial_banner_data:
         if "boost" in b:
             final_banner['boost'] = b
-        elif "sats" in b:
+        elif "sats" in b or "sat" in b:
             final_banner['sats'] = b
         elif "@" in b:
             match = re.search(username_pattern, b).group(1)
