@@ -9,4 +9,4 @@ stacker-news.Rproj
 .Rprofile
 renv/
 scripts/__pycache__/
-tests
+tests/
