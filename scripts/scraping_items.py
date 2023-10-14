@@ -1,3 +1,5 @@
+import time
+
 from bs4 import BeautifulSoup
 import requests as requests
 import item
@@ -9,8 +11,8 @@ import sqlite3
 
 
 # Sampling the items to scrape
-from random import sample
-sampled_items = sample([*range(1,250000)], 1000)
+#from random import sample
+#sampled_items = sample([*range(1,250000)], 1000)
 
 # Queries for entry insertion in tables
 insert_comment = """
@@ -124,10 +126,12 @@ for i in tqdm(sampled_items):
             except:
                 print(f'Error while inserting the post item {i} in the database')
 
-        if i % 5000 == 0:
+        if i % 1000 == 0:
             conn.commit()
+            time.sleep(0.5)
             continue
     except:
+
         try:
             exception_entry = (
                 str(response),
@@ -137,6 +141,9 @@ for i in tqdm(sampled_items):
 
             cur.execute(insert_exception, exception_entry)
 
+            # If the request is not authorized than stop the scraping because I've been probably blocked
+            if response.status_code == 403 or response.status_code == 401:
+                exit()
         except:
             continue
 
