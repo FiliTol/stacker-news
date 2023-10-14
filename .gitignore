@@ -10,3 +10,4 @@ stacker-news.Rproj
 renv/
 scripts/__pycache__/
 tests/
+qodana.yaml
