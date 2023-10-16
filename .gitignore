@@ -1,0 +1,13 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+user_modules/
+trash/
+.idea
+stacker-news.Rproj
+.Rprofile
+renv/
+scripts/__pycache__/
+tests/
+qodana.yaml
