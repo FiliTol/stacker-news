@@ -11,4 +11,3 @@ renv/
 scripts/__pycache__/
 tests/
 qodana.yaml
-*.sqlite
