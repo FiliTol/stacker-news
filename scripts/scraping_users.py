@@ -17,7 +17,7 @@ FROM (
 """
 
 insert_user = """
-INSERT INTO user (
+INSERT OR IGNORE INTO user (
     User,
     TotalStacked,
     FirstItem,

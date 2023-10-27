@@ -11,8 +11,8 @@ import sqlite3
 
 
 # Sampling the items to scrape
-#from random import sample
-#sampled_items = sample([*range(1,250000)], 1000)
+from random import sample
+sampled_items = sample([*range(1,250000)], 1000)
 
 # Queries for entry insertion in tables
 insert_comment = """
