@@ -359,12 +359,20 @@ display: none;
 
 <div id="TOC">
 <ul>
-<li><a href="#prova" id="toc-prova">Prova</a></li>
+<li><a href="#retrieve-data-from-sqlite-db" id="toc-retrieve-data-from-sqlite-db">Retrieve data from SQLite
+DB</a></li>
 </ul>
 </div>
 
-<div id="prova" class="section level2">
-<h2>Prova</h2>
+<div id="retrieve-data-from-sqlite-db" class="section level2">
+<h2>Retrieve data from SQLite DB</h2>
+<pre class="r"><code>conn &lt;- connection_open(SQLite(), &quot;../data/stacker_news.sqlite&quot;)</code></pre>
+<p>Tables are transformed into data.table objects</p>
+<pre class="r"><code>users &lt;- setDT(dbGetQuery(conn, &quot;SELECT * FROM user&quot;))
+comments &lt;- setDT(dbGetQuery(conn, &quot;SELECT * FROM comments&quot;))
+posts &lt;- setDT(dbGetQuery(conn, &quot;SELECT * FROM post&quot;))</code></pre>
+<p>Close the connection with the SQLite DB</p>
+<pre class="r"><code>connection_close(conn)</code></pre>
 </div>
 
 

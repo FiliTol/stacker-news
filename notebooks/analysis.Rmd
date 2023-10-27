@@ -13,6 +13,50 @@ knit: (function(inputFile, encoding) {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(remotes)
+#remotes::install_github("edgararuiz/connections")
+library(connections)
+library(RSQLite)
+library(data.table)
+library(igraph)
+library(ggplot2)
 ```
 
-## Prova
+## Retrieve data from SQLite DB
+
+```{r}
+conn <- connection_open(SQLite(), "../data/stacker_news.sqlite")
+```
+
+Tables are transformed into data.table objects
+
+```{r}
+users <- setDT(dbGetQuery(conn, "SELECT * FROM user"))
+comments <- setDT(dbGetQuery(conn, "SELECT * FROM comments"))
+posts <- setDT(dbGetQuery(conn, "SELECT * FROM post"))
+```
+
+Close the connection with the SQLite DB
+```{r}
+connection_close(conn)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
