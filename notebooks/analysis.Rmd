@@ -20,6 +20,7 @@ library(RSQLite)
 library(data.table)
 library(igraph)
 library(ggplot2)
+library(stringr)
 ```
 
 ## Retrieve data from SQLite DB
@@ -40,6 +41,93 @@ Close the connection with the SQLite DB
 ```{r}
 connection_close(conn)
 ```
+
+## Data cleaning and manipulation
+
+Please note that while scraping data were all saved in 'string` form to better
+manage datatypes in the database
+
+### Users
+
+```{r}
+str(users)
+```
+
+Users table contains five variables.
+
+- `User` is a string, the username;
+- `TotalStacked` is the total amount of sat ever stacked by the user -> need it as integer;
+- `FirstItem` is the number of the first post that the user created, if any;
+- `HatStreak` is the number of cowboy hat streaks that the user achieved, if any -> need it as integer;
+- `NumItems` is the total number of items created by the user in the forum, if any -> need it as integer.
+
+The following chunck changes the needed variables into the needed datatype
+
+```{r}
+change_columns <- c("TotalStacked", "HatStreak", "NumItems")  
+users[ , (change_columns) := lapply(.SD, as.numeric), .SDcols = change_columns]
+```
+
+Result of the transformation
+
+```{r}
+sapply(users, class)
+```
+
+### Posts
+
+```{r}
+str(posts)
+```
+
+Post table contains 13 variables.
+
+- `Title` is the post title;
+- `Category` is the post category;
+- `ItemCode` is the unique identifier for the post;
+- `Sats` is the number of sat stacked by the post -> need it as integer;
+- `Boost` is the number of boosts assigned to the post. Boosts are needed to speed up the post diffusion in the form (kind of advertising) -> need it as integer;
+- `Comments` is the number of comments -> need it as integer;
+- `Author` is the username of the post author;
+- `Tag` is the tag assigned to the post by the author;
+- `Timestamp` is the timestamp of the creation of the post -> need it in datetime;
+- `MainLink` is the main link displayed by the post, a post has a main link if it has the *link* category, if not then the value is NA;
+- `BodyLinks` is the field containing a string in which all the links in the body post and comments are contained. If the post contains no link, then the string is empty;
+- `SatsReceivedComments` is the total number of sat received by the comments to the post -> need it as integer;
+- `CommentsItemCode` is the list of item codes of the comments.
+
+Multiple variables of this table must be transformed into the proper data type, however some of those cannot be transformed straightforwardly because of multiple formatting errors. A more profund data cleaning is needed before the datatype transformation.
+
+#### Sats variable
+
+This variable has to be transformed into numeric type, however beforehand we must cut away the postfix 'sats' or 'sat' from the stings.
+
+> Since some forum pages were affected by some inconsistencies in the html code, scraping created some anomalies in the `Author` and `Sats` columns. The result of the process is a table in which some rows have the author value in the `Sats` column, missing `Sats` number and a `None` author; therefore during the cleaning we need to transport the author tag into the `Author` field instead of the `None` value.
+
+```{r}
+
+```
+
+
+```{r}
+# # Substitute rounding of thousands 'k' and millions 'm' into integers
+# posts[ , Sats := (str_replace_all(Sats, ".k sats", "") %>%
+#                    str_replace_all(., ".m sat", ""))]
+#                    
+# # Trim string at the end
+# posts[ , Sats := (str_replace_all(Sats, " sats$", "") %>% str_replace_all(., " sat$", ""))]
+# 
+# # Turn variable in numeric
+# posts[ , Sats := as.numeric(Sats)]
+```
+
+
+```{r}
+posts[is.na(Sats)]
+```
+
+
+
 
 
 
