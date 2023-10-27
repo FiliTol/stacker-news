@@ -12,3 +12,4 @@ scripts/__pycache__/
 tests/
 qodana.yaml
 stacker_news.sqlite
+outputs/
