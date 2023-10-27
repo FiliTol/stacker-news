@@ -1,6 +1,25 @@
 from bs4 import BeautifulSoup
 import requests as requests
 import re
+import sqlite3
+
+
+# Setup user table in the SQLite database
+sql_user = """
+DROP TABLE IF EXISTS user;
+CREATE TABLE user (
+    ItemCode TEXT,
+    Sats TEXT,
+    Boost TEXT,
+    Comments TEXT,
+    Author TEXT,
+    Tag TEXT,
+    Timestamp TEXT,
+    CommentsItemCode TEXT,
+    PRIMARY KEY (ItemCode))
+"""
+
+
 
 
 # Fixed value to be returned for missing values or request errors

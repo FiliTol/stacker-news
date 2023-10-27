@@ -44,6 +44,16 @@ CREATE TABLE exceptions(
     PRIMARY KEY (ItemCode))
 """
 
+sql_user = """
+DROP TABLE IF EXISTS user;
+CREATE TABLE user (
+    User TEXT,
+    TotalStacked TEXT,
+    FirstItem TEXT,
+    HatStreak TEXT,
+    NumItems TEXT,
+    PRIMARY KEY (User))
+"""
 
 # Create database connection
 conn = sqlite3.connect('data/stacker_news.sqlite')
@@ -53,6 +63,7 @@ cur = conn.cursor()
 cur.executescript(sql_comment)
 cur.executescript(sql_post)
 cur.executescript(sql_exception)
+cur.executescript(sql_user)
 
 # Commit table creation and wait 1 second
 conn.commit()
