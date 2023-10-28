@@ -25,15 +25,15 @@ def extract_banner(page):
                     }
 
     # Extract data in the banner
-    username_pattern = r'@([a-zA-Z0-9]+)'
+    username_pattern = r'@([<!->]*[a-zA-Z0-9]+)'
     for b in partial_banner_data:
-        if "boost" in b:
+        if "@" in b:
+            match = re.search(username_pattern, b).group(1)
+            final_banner['author'] = match
+        elif "boost" in b:
             final_banner['boost'] = b
         elif "sats" in b or "sat" in b:
             final_banner['sats'] = b
-        elif "@" in b:
-            match = re.search(username_pattern, b).group(1)
-            final_banner['author'] = match
 
     # Extract the data not extracted yet
     try:
