@@ -213,16 +213,28 @@ posts[, BodyLinks := (str_replace_all(BodyLinks, '^\\[', "") %>%
                       )
       ]
 
-posts[, BodyLinks := as.list(strsplit(BodyLinks, split = ", "))]
-
-posts[1, c(BodyLinks)][1]
+posts[, BodyLinks := list(strsplit(BodyLinks, split = ", "))]
 ```
+
+The following code then extract the first link from the BodyLinks column and put it in the MainLink column, for posts that are links.
 
 ```{r}
-posts[, MainLink := ifelse(MainLink=='None', BodyLinks, MainLink)]
-
-posts[3, MainLink]
+posts[, MainLink := ifelse(MainLink=='None', sapply(BodyLinks, `[`, 1), MainLink)]
 ```
+
+
+#### SatsReceivedComments variable
+
+```{r}
+posts[, unique(SatsReceivedComments)]
+```
+
+
+
+
+
+
+
 
 
 
