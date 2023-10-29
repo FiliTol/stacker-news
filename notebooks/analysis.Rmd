@@ -226,15 +226,95 @@ posts[, MainLink := ifelse(MainLink=='None', sapply(BodyLinks, `[`, 1), MainLink
 #### SatsReceivedComments variable
 
 ```{r}
-posts[, unique(SatsReceivedComments)]
+posts[ , SatsReceivedComments := (str_replace_all(SatsReceivedComments, "k sats$", "000") %>%
+                                    str_replace_all(., "m sats$", "000000") %>%
+                                    str_replace_all(., " sats$", "") %>%
+                                    str_replace_all(., " sat$", "")
+                                  )
+       ]
+
+posts[, SatsReceivedComments := ifelse(str_detect(SatsReceivedComments, "\\."), str_sub(str_replace_all(SatsReceivedComments, "\\.", ""), end = -2), SatsReceivedComments)]
+
+posts[, SatsReceivedComments := as.numeric(SatsReceivedComments)]
 ```
 
 
+```{r}
+posts[SatsReceivedComments<1000] %>%
+  ggplot()+
+  geom_histogram(aes(x = SatsReceivedComments), bins = 30)
+```
 
+### Comments
 
+```{r}
+str(comments)
+```
 
+Comments table contains 8 variables:
 
+- `ItemCode` is a sting, the unique code assigned to the comment;
+- `Sats` is the amount of sats stacked by the comment -> need it as integer;
+- `Boost` is the number of boosts received by the comment -> need it as integer;
+- `Comments` is the number of replies that the comment had -> need it as integer;
+- `Author` is the name of the author;
+- `Tag` is the tag assigned to the post by the author;
+- `Timestamp` is the timestamp of the creation of the post -> need it in datetime;
+- `CommentsItemCode` is the list of item codes of the comments.
 
+#### Sats variable
+
+```{r}
+comments[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
+                    str_replace_all(., "m sats$", "000000") %>%
+                    str_replace_all(., " sats$", "") %>%
+                    str_replace_all(., " sat$", "")
+                  )
+       ]
+
+comments[, Sats := ifelse(str_detect(Sats, "\\."), str_sub(str_replace_all(Sats, "\\.", ""), end = -2), Sats)]
+
+comments[ , Sats := as.numeric(Sats)] 
+```
+
+The median of the Sats distribution is `r na.omit(comments, "Sats")[, median(Sats)]`
+
+```{r}
+comments[Sats<1000] %>%
+  ggplot()+
+  geom_histogram(aes(x = Sats))
+```
+
+#### Boost variable
+
+```{r}
+comments[ , Boost := (str_replace_all(Boost, "k boost$", "000") %>%
+                    str_replace_all(., " boost$", "")
+                  )
+       ]
+
+comments[, Boost := ifelse(str_detect(Boost, "\\."), str_sub(str_replace_all(Boost, "\\.", ""), end = -2), Boost)]
+
+comments[, Boost := as.numeric(Boost)]
+```
+
+Note that the previous procedure introduced `r sum(is.na(comments[,Boost]))` NA values for the Boost variable. In fact the majority of the comments didn't receive boosts, which is quite reasonable since boosts are used to increase visibility of posts just like sponsored features in other social media, and usually comments are not so worth to be promoted because they are strictly related to the post they refer to.
+
+```{r}
+comments %>%
+  ggplot()+
+  geom_histogram(aes(x = Boost))
+```
+
+#### Timestamp variable
+
+```{r}
+comments[, Timestamp := ymd_hms(Timestamp)]
+```
+
+```{r}
+sapply(comments, class)$Timestamp
+```
 
 
 
