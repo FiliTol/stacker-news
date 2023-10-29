@@ -21,6 +21,7 @@ library(data.table)
 library(igraph)
 library(ggplot2)
 library(stringr)
+library(lubridate)
 ```
 
 ## Data importing, cleaning and manipulation
@@ -138,7 +139,7 @@ posts[Sats<1000] %>%
 #### Boost variable
 
 In order to deal with the thousands (k) and the decimals, we use the same technique already applied for the Sats variable.
-Then the Boost variable is turned into numeric and some NAs are introduced. The majority of the posts, namely `r nrow(posts[is.na(Boost)])` posts, do not have boost (because they are not sponsored posts). Therefore the majority of the Boost values will be NAs.
+Then the Boost variable is turned into numeric and some NAs are introduced. The majority of the posts, more precisely `r nrow(posts[is.na(Boost)])` posts, do not have boost (because they are not sponsored posts). Therefore the majority of the Boost values will be NAs.
 
 ```{r}
 # Substitute rounding of thousands 'k'
@@ -157,6 +158,75 @@ posts %>%
   ggplot()+
   geom_histogram(aes(x=Boost), bins=30)
 ```
+
+#### Comments variable
+
+```{r}
+posts[, Comments := (str_replace_all(Comments, " comments", "") %>%
+                       str_replace_all(., " comment", "")
+                     )
+      ]
+
+posts[, Comments := as.numeric(Comments)]
+```
+
+
+```{r}
+posts %>%
+  ggplot()+
+  geom_histogram(aes(x=Comments))
+```
+
+#### Timestamp variable
+
+```{r}
+posts[, Timestamp := ymd_hms(Timestamp)]
+```
+
+Let's visualize the transformation
+
+```{r}
+sapply(posts, class)$Timestamp
+```
+
+#### MainLink and BodyLinks variable
+
+This variable shows the main link for 'link' posts.
+This variable has been massively affected by an error during the scraping. The result of that process are widely diffused miss-classification of links that are consistent throughout the dataset, so we can deal with those straightforwardly.
+
+Namely:
+
+- If the value of MainLink is a string with a link, then the scraping had the desired outcome;
+- If the value of MainLink is 'None', then the item has a Link but it was wrongfully stored as the first element of the BodyLinks variable;
+- If the value of MainLink is NA, then the item does not have a main link (because it does not belong to the category 'link')
+
+The result of this is that:
+
+- for MainLink='None' we need to move the first link in BodyLinks to MainLink;
+- All the other cases are correct.
+
+Since BodyLinks values are in the string form, we need firstly to deal with BodyLinks datatype, turning it into a vector. Then we can execute the needed procedure.
+
+```{r}
+posts[, BodyLinks := (str_replace_all(BodyLinks, '^\\[', "") %>%
+                        str_replace_all(., '\\]$', "")
+                      )
+      ]
+
+posts[, BodyLinks := as.list(strsplit(BodyLinks, split = ", "))]
+
+posts[1, c(BodyLinks)][1]
+```
+
+```{r}
+posts[, MainLink := ifelse(MainLink=='None', BodyLinks, MainLink)]
+
+posts[3, MainLink]
+```
+
+
+
+
 
 
 
