@@ -77,7 +77,7 @@ Post table contains 13 variables.
 - `Category` is the post category;
 - `ItemCode` is the unique identifier for the post;
 - `Sats` is the number of sat stacked by the post -> need it as integer;
-- `Boost` is the number of boosts assigned to the post. Boosts are needed to speed up the post diffusion in the form (kind of advertising) -> need it as integer;
+- `Boost` is the number of boosts assigned to the post. Boosts are needed to speed up the post diffusion in the forum (kind of advertising) -> need it as integer;
 - `Comments` is the number of comments -> need it as integer;
 - `Author` is the username of the post author;
 - `Tag` is the tag assigned to the post by the author;
@@ -105,7 +105,7 @@ posts[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
 posts[, Sats := ifelse(str_detect(Sats, "\\."), str_sub(str_replace_all(Sats, "\\.", ""), end = -2), Sats)]
 
 # Turn variable in numeric
-posts[ , Sats := as.numeric(Sats)] # The rows with sat amount equal to 'None' will inherit an NA value
+posts[ , Sats := as.numeric(Sats)] 
 ```
 
 Please note that we are left some NAs. These items with Sats=NA are items that don't have the Sats field in the post template because they are created by the forum administrator and they cannot be tipped.
@@ -136,6 +136,29 @@ posts[Sats<1000] %>%
 
 
 #### Boost variable
+
+In order to deal with the thousands (k) and the decimals, we use the same technique already applied for the Sats variable.
+Then the Boost variable is turned into numeric and some NAs are introduced. The majority of the posts, namely `r nrow(posts[is.na(Boost)])` posts, do not have boost (because they are not sponsored posts). Therefore the majority of the Boost values will be NAs.
+
+```{r}
+# Substitute rounding of thousands 'k'
+posts[ , Boost := (str_replace_all(Boost, "k boost$", "000") %>%
+                    str_replace_all(., " boost$", "")
+                  )
+       ]
+
+posts[, Boost := ifelse(str_detect(Boost, "\\."), str_sub(str_replace_all(Boost, "\\.", ""), end = -2), Boost)]
+
+posts[, Boost := as.numeric(Boost)]
+```
+
+```{r}
+posts %>%
+  ggplot()+
+  geom_histogram(aes(x=Boost), bins=30)
+```
+
+
 
 
 
