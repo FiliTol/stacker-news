@@ -23,26 +23,17 @@ library(ggplot2)
 library(stringr)
 ```
 
-## Retrieve data from SQLite DB
+## Data importing, cleaning and manipulation
 
-```{r}
+```{r Query to database}
 conn <- connection_open(SQLite(), "../data/stacker_news.sqlite")
-```
 
-Tables are transformed into data.table objects
-
-```{r}
 users <- setDT(dbGetQuery(conn, "SELECT * FROM user"))
 comments <- setDT(dbGetQuery(conn, "SELECT * FROM comments"))
 posts <- setDT(dbGetQuery(conn, "SELECT * FROM post"))
-```
 
-Close the connection with the SQLite DB
-```{r}
 connection_close(conn)
 ```
-
-## Data cleaning and manipulation
 
 Please note that while scraping data were all saved in 'string` form to better
 manage datatypes in the database

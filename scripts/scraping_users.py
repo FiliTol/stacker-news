@@ -26,8 +26,21 @@ INSERT OR IGNORE INTO user (
     ) values (?, ?, ?, ?, ?)
 """
 
+sql_user = """
+DROP TABLE IF EXISTS user;
+CREATE TABLE user (
+    User TEXT,
+    TotalStacked TEXT,
+    FirstItem TEXT,
+    HatStreak TEXT,
+    NumItems TEXT,
+    PRIMARY KEY (User))
+"""
+
 conn = sqlite3.connect('../data/stacker_news.sqlite')
 cur = conn.cursor()
+
+cur.executescript(sql_user)
 
 sql_query = pd.read_sql(query, conn)
 result = pd.DataFrame(sql_query,
