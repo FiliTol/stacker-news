@@ -93,37 +93,49 @@ Multiple variables of this table must be transformed into the proper data type, 
 
 This variable has to be transformed into numeric type, however beforehand we must cut away the postfix 'sats' or 'sat' from the stings.
 
-> Since some forum pages were affected by some inconsistencies in the html code, scraping created some anomalies in the `Author` and `Sats` columns. The result of the process is a table in which some rows have the author value in the `Sats` column, missing `Sats` number and a `None` author; therefore during the cleaning we need to transport the author tag into the `Author` field instead of the `None` value.
+```{r}
+# Substitute rounding of thousands 'k' and millions 'm' into integers
+posts[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
+                    str_replace_all(., "m sats$", "000000") %>%
+                    str_replace_all(., " sats$", "") %>%
+                    str_replace_all(., " sat$", "")
+                  )
+       ]
+
+posts[, Sats := ifelse(str_detect(Sats, "\\."), str_sub(str_replace_all(Sats, "\\.", ""), end = -2), Sats)]
+
+# Turn variable in numeric
+posts[ , Sats := as.numeric(Sats)] # The rows with sat amount equal to 'None' will inherit an NA value
+```
+
+Please note that we are left some NAs. These items with Sats=NA are items that don't have the Sats field in the post template because they are created by the forum administrator and they cannot be tipped.
+Also 37 of them are created by the user 'ad', who is a bot defined by the forum creator to broadcast ads as posts. Those items cannot be tipped too.
 
 ```{r}
+# Test if we managed None values correctly
+nrow(posts[is.na(Sats)]) == nrow(posts[is.na(Sats) & Author=='saloon']) + nrow(posts[is.na(Sats) & Author=='ad'])
+```
 
+Now the `Sats` column contains only numeric values (the amount of sat stacked by the post) and the NAs are all related to posts that actually didn't receive Sats because of structural reasons.
+
+The following graph shows the distribution of sats within the posts. The distribution is clearly asymmetric and has the majority of the posts with an amount of sats stacked very close to zero.
+
+```{r}
+posts %>%
+  ggplot()+
+  geom_density(aes(x = Sats))
+```
+
+By filtering the amount of sats to a reasonable value is possible to observe the distribution, with the median value of sats stacked by a post equal to `r na.omit(posts, "Sats")[, median(Sats)]`
+
+```{r}
+posts[Sats<1000] %>%
+  ggplot()+
+  geom_histogram(aes(x = Sats))
 ```
 
 
-```{r}
-# # Substitute rounding of thousands 'k' and millions 'm' into integers
-# posts[ , Sats := (str_replace_all(Sats, ".k sats", "") %>%
-#                    str_replace_all(., ".m sat", ""))]
-#                    
-# # Trim string at the end
-# posts[ , Sats := (str_replace_all(Sats, " sats$", "") %>% str_replace_all(., " sat$", ""))]
-# 
-# # Turn variable in numeric
-# posts[ , Sats := as.numeric(Sats)]
-```
-
-
-```{r}
-posts[is.na(Sats)]
-```
-
-
-
-
-
-
-
-
+#### Boost variable
 
 
 
