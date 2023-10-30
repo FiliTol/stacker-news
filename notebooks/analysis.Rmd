@@ -426,11 +426,11 @@ edge_density(simple_g)
 ```
 
 ```{r}
-plot(
-  simple_g,
-  layout = layout_components, 
-  vertex.label = NA
-  )
+# plot(
+#   simple_g,
+#   layout = layout_components, 
+#   vertex.label = NA
+#   )
 ```
 
 **We clearly need to insert some kind of sorting method in order to capture only a subset of users**
