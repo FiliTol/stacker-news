@@ -22,6 +22,7 @@ library(igraph)
 library(ggplot2)
 library(stringr)
 library(lubridate)
+library(reticulate)
 ```
 
 ## Data importing, cleaning and manipulation
@@ -316,7 +317,10 @@ comments[, Timestamp := ymd_hms(Timestamp)]
 sapply(comments, class)$Timestamp
 ```
 
+### Dataframe for graph creation
 
+The graph will be a graph of users and the links they have between each other within the platform.
+Every node is a user, edges are the interactions between users. Every edge has a different weight based on the amount of interactions between users, namely 'how many times users commented each other's posts'.
 
 
 
