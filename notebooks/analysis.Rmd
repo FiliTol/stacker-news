@@ -66,6 +66,25 @@ Result of the transformation
 sapply(users, class)
 ```
 
+#### Adding user label
+
+In order to analyse the user base, here we procede to add a new column to the table called `Role`. The variable has the value `contributor` if the user is a forum administrator, `other` otherwise.
+The roles of users are extracted by looking at [this file](https://github.com/stackernews/stacker.news/blob/master/contributors.txt) in the github page of the project.
+
+```{r}
+contrib <- c("k00b",
+                  "kr",
+                  "ekzyis",
+                  "WeAreAllSatoshi",
+                  "rleed",
+                  "bitcoinplebdev",
+                  "benthecarman"
+                  )
+
+users[, Role := ifelse(User %in% contrib, "contributor", "other")]
+```
+
+
 ### Posts
 
 ```{r}
@@ -396,6 +415,38 @@ E(g)
 V(g)
 ```
 
+We now need to find out the precise subset of users that are actually vertexes.
+
+```{r}
+users[, unique(Role)]
+```
+
+
+```{r}
+nyms <- V(g)$name
+nyms <- setDT(data.frame(nyms))
+
+sum(is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T, all.y = T)$Role))
+
+merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T, all.y = T)
+
+merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)                           # I don't have a users entry for some vertex
+
+is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)$TotalStacked)
+```
+
+From the previous reasoning I'm left with the following options:
+
+1. Using for the graph only the users for which I have an entry in Users table;
+2. Using for the graph also the users that have a vertex but do not have a corresponding entry in the users table.
+
+The consequence of 1 is that I'm left with 5208 users, I have to rebuild a graph with those; the consequence of 2 is that I do not have anagraphic information for some users (~300), nor I have the Role or the StackedAmount. The second option doesn't seem to be a problem, we just need to understand why I'm left with less users in the users table after the scraping (because the list through which we loop is the list of all the unique users that posted or commented at least once).
+
+```{r}
+#V(g)$type <- 
+```
+
+
 #### Simplify graph
 
 The following function simplifies the graph, meaning that gives the option to eliminate loops and multiple edges.
@@ -419,10 +470,14 @@ plot(degree.distribution(simple_g))
 edge_density(simple_g)
 ```
 
-**WE MUST ADD THE LABEL TO ADMINISTRATORS IN ORDER TO DO THE BIPARTITE GRAPH**
+```{r}
+#simple_g <- set_vertex_attr(simple_g, "type", index = contrib, value = rep("contrib", length(contrib)))
+
+#simple_g <- set_vertex_attr(simple_g, "type", index = valid_nyms, value = filtered_roles)
+```
 
 ```{r}
-#plot(simple_g, layout = layout_as_bipartite, vertex.label = NA)
+#plot(simple_g, layout = layout_as_bipartite)
 ```
 
 ```{r}
@@ -433,7 +488,13 @@ edge_density(simple_g)
 #   )
 ```
 
-**We clearly need to insert some kind of sorting method in order to capture only a subset of users**
+
+
+
+
+
+
+
 
 
 
