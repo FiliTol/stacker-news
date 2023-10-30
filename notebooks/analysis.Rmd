@@ -440,6 +440,17 @@ edge_density(simple_g)
 
 
 
+# Render markdown as Rscript
+
+```{r}
+# knitr::purl(input = 'analysis.Rmd',
+#             output = '../scripts/analysis.R',
+#             documentation = 2
+#             )
+```
+
+
+
 
 
 
