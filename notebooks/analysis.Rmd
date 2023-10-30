@@ -374,11 +374,66 @@ posts_graph <- posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, Commen
 head(posts_graph)
 ```
 
+```{r}
+final_graph <- posts_graph[, .(PostAuthor, CommentAuthor)]
+```
 
 
+### Graph features
 
+```{r}
+g <- graph_from_data_frame(final_graph, directed = F)
+```
 
+#### 
 
+The edges are all the links between users. This result must be adjusted with the elimination of loops. Loops are links that connect a node to itself; in this situation a post author that commented on his/her own post creates a loop.
+
+The vertices are all the users in the graph.
+
+```{r}
+E(g)
+V(g)
+```
+
+#### Simplify graph
+
+The following function simplifies the graph, meaning that gives the option to eliminate loops and multiple edges.
+Loop edges are edges with the same vertex endpoint; multiple edges are edges that have all the same respective endpoints.
+
+```{r}
+simple_g <- simplify(g, remove.multiple = T, remove.loops = T)
+```
+
+The following command extracts the edge list
+
+```{r}
+head(as_edgelist(simple_g, names=T))
+```
+
+```{r}
+plot(degree.distribution(simple_g))
+```
+
+```{r}
+edge_density(simple_g)
+```
+
+**WE MUST ADD THE LABEL TO ADMINISTRATORS IN ORDER TO DO THE BIPARTITE GRAPH**
+
+```{r}
+#plot(simple_g, layout = layout_as_bipartite, vertex.label = NA)
+```
+
+```{r}
+plot(
+  simple_g,
+  layout = layout_components, 
+  vertex.label = NA
+  )
+```
+
+**We clearly need to insert some kind of sorting method in order to capture only a subset of users**
 
 
 
