@@ -322,6 +322,33 @@ sapply(comments, class)$Timestamp
 The graph will be a graph of users and the links they have between each other within the platform.
 Every node is a user, edges are the interactions between users. Every edge has a different weight based on the amount of interactions between users, namely 'how many times users commented each other's posts'.
 
+In order to elaborate data with igraph library in the desired manner, further data manipulations are needed. Namely, the nodes-edges of the graph must be derived by matching every post with the comments by exploding the commentors vector (CommentsItemCode) for every post. Then the data elaboration must retrieve the corrisponding commentor username for every comment. The resulting table should have the following form:
+
+|User1|User2|Weight|
+|---|---|---|
+
+Where `User1` and `User2` is the unique couple of users and the `weight` is the counter of interactions that the unique user couple had.
+
+#### Explosion of `CommentsItemCode` variable
+
+```{r}
+posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
+                        str_replace_all(., '\\]$', "")
+                      )
+      ]
+```
+
+```{r}
+posts_graph <- copy(posts)
+```
+
+The following command creates a datatable object that has 2 columns containing the post code and the comment code, respectively.
+
+```{r}
+posts_graph <- posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", ", type.convert = TRUE))), by = "ItemCode"]
+```
+
+
 
 
 
