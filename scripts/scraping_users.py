@@ -37,16 +37,15 @@ CREATE TABLE user (
     PRIMARY KEY (User))
 """
 
-conn = sqlite3.connect('../data/stacker_news.sqlite')
+conn = sqlite3.connect("../data/stacker_news.sqlite")
 cur = conn.cursor()
 
 cur.executescript(sql_user)
 
 sql_query = pd.read_sql(query, conn)
-result = pd.DataFrame(sql_query,
-                      columns=['Author'])
+result = pd.DataFrame(sql_query, columns=["Author"])
 
-for i in tqdm(result['Author']):
+for i in tqdm(result["Author"]):
     try:
         profile_data = user.get_profile(i)
         entry = (
@@ -54,7 +53,7 @@ for i in tqdm(result['Author']):
             str(profile_data[1]),
             str(profile_data[2]),
             str(profile_data[3]),
-            str(profile_data[4])
+            str(profile_data[4]),
         )
         try:
             cur.execute(insert_user, entry)

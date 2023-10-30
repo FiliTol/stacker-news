@@ -56,7 +56,7 @@ CREATE TABLE user (
 """
 
 # Create database connection
-conn = sqlite3.connect('data/stacker_news.sqlite')
+conn = sqlite3.connect("data/stacker_news.sqlite")
 cur = conn.cursor()
 
 # Insert tables into database
