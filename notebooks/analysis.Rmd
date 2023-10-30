@@ -22,7 +22,6 @@ library(igraph)
 library(ggplot2)
 library(stringr)
 library(lubridate)
-library(reticulate)
 ```
 
 ## Data importing, cleaning and manipulation
@@ -338,22 +337,42 @@ posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
       ]
 ```
 
+The following command creates a data.table object that has 2 columns containing the post code and the comment code, respectively.
+
 ```{r}
 posts_graph <- copy(posts)
+posts_graph <- posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
 ```
 
-The following command creates a datatable object that has 2 columns containing the post code and the comment code, respectively.
+#### Merging graph table and posts table to obtain again the post author
+
+**Please note that we can obtain every needed information from this merge and subsetting process**
 
 ```{r}
-posts_graph <- posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", ", type.convert = TRUE))), by = "ItemCode"]
+posts_graph <- merge(posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
 ```
 
+```{r}
+posts_graph <- posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+```
 
+#### Merging graph table and comments table to obtain the comment author
 
+**Please note that we can obtain every needed information from this merge and subsetting process**
 
+```{r}
+posts_graph <- merge(posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+```
 
+```{r}
+posts_graph <- posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+```
 
+#### Resulting table 
 
+```{r}
+head(posts_graph)
+```
 
 
 
