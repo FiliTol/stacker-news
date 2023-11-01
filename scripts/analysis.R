@@ -11,7 +11,7 @@
 #'   })
 #' ---
 #' 
-## ----setup, include=FALSE---------------------------------------------------------------------------------------------------
+## ----setup, include=FALSE---------------------------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 library(remotes)
 #remotes::install_github("edgararuiz/connections")
@@ -22,12 +22,13 @@ library(igraph)
 library(ggplot2)
 library(stringr)
 library(lubridate)
+library(RColorBrewer)
 
 #' 
 #' ## Data importing, cleaning and manipulation
 #' 
-## ----Query to database------------------------------------------------------------------------------------------------------
-conn <- connection_open(SQLite(), "data/stacker_news.sqlite")
+## ----Query to database------------------------------------------------------------------------------------------------------------------------------
+conn <- connection_open(SQLite(), "../data/stacker_news.sqlite")
 
 users <- setDT(dbGetQuery(conn, "SELECT * FROM user"))
 comments <- setDT(dbGetQuery(conn, "SELECT * FROM comments"))
@@ -41,7 +42,7 @@ connection_close(conn)
 #' 
 #' ### Users
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 str(users)
 
 #' 
@@ -55,20 +56,39 @@ str(users)
 #' 
 #' The following chunck changes the needed variables into the needed datatype
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 change_columns <- c("TotalStacked", "HatStreak", "NumItems")  
 users[ , (change_columns) := lapply(.SD, as.numeric), .SDcols = change_columns]
 
 #' 
 #' Result of the transformation
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 sapply(users, class)
 
 #' 
+#' #### Adding user label
+#' 
+#' In order to analyse the user base, here we procede to add a new column to the table called `Role`. The variable has the value `contributor` if the user is a forum administrator, `other` otherwise.
+#' The roles of users are extracted by looking at [this file](https://github.com/stackernews/stacker.news/blob/master/contributors.txt) in the github page of the project.
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
+contrib <- c("k00b",
+                  "kr",
+                  "ekzyis",
+                  "WeAreAllSatoshi",
+                  "rleed",
+                  "bitcoinplebdev",
+                  "benthecarman"
+                  )
+
+users[, Role := ifelse(User %in% contrib, "contributor", "other")]
+
+#' 
+#' 
 #' ### Posts
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 str(posts)
 
 #' 
@@ -94,7 +114,7 @@ str(posts)
 #' 
 #' This variable has to be transformed into numeric type, however beforehand we must cut away the postfix 'sats' or 'sat' from the stings.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Substitute rounding of thousands 'k' and millions 'm' into integers
 posts[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
                     str_replace_all(., "m sats$", "000000") %>%
@@ -112,7 +132,7 @@ posts[ , Sats := as.numeric(Sats)]
 #' Please note that we are left some NAs. These items with Sats=NA are items that don't have the Sats field in the post template because they are created by the forum administrator and they cannot be tipped.
 #' Also 37 of them are created by the user 'ad', who is a bot defined by the forum creator to broadcast ads as posts. Those items cannot be tipped too.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Test if we managed None values correctly
 nrow(posts[is.na(Sats)]) == nrow(posts[is.na(Sats) & Author=='saloon']) + nrow(posts[is.na(Sats) & Author=='ad'])
 
@@ -121,7 +141,7 @@ nrow(posts[is.na(Sats)]) == nrow(posts[is.na(Sats) & Author=='saloon']) + nrow(p
 #' 
 #' The following graph shows the distribution of sats within the posts. The distribution is clearly asymmetric and has the majority of the posts with an amount of sats stacked very close to zero.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts %>%
   ggplot()+
   geom_density(aes(x = Sats))
@@ -129,7 +149,7 @@ posts %>%
 #' 
 #' By filtering the amount of sats to a reasonable value is possible to observe the distribution, with the median value of sats stacked by a post equal to `r na.omit(posts, "Sats")[, median(Sats)]`
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[Sats<1000] %>%
   ggplot()+
   geom_histogram(aes(x = Sats))
@@ -141,7 +161,7 @@ posts[Sats<1000] %>%
 #' In order to deal with the thousands (k) and the decimals, we use the same technique already applied for the Sats variable.
 #' Then the Boost variable is turned into numeric and some NAs are introduced. The majority of the posts, more precisely `r nrow(posts[is.na(Boost)])` posts, do not have boost (because they are not sponsored posts). Therefore the majority of the Boost values will be NAs.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Substitute rounding of thousands 'k'
 posts[ , Boost := (str_replace_all(Boost, "k boost$", "000") %>%
                     str_replace_all(., " boost$", "")
@@ -153,7 +173,7 @@ posts[, Boost := ifelse(str_detect(Boost, "\\."), str_sub(str_replace_all(Boost,
 posts[, Boost := as.numeric(Boost)]
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts %>%
   ggplot()+
   geom_histogram(aes(x=Boost), bins=30)
@@ -161,7 +181,7 @@ posts %>%
 #' 
 #' #### Comments variable
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[, Comments := (str_replace_all(Comments, " comments", "") %>%
                        str_replace_all(., " comment", "")
                      )
@@ -171,7 +191,7 @@ posts[, Comments := as.numeric(Comments)]
 
 #' 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts %>%
   ggplot()+
   geom_histogram(aes(x=Comments))
@@ -179,13 +199,13 @@ posts %>%
 #' 
 #' #### Timestamp variable
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[, Timestamp := ymd_hms(Timestamp)]
 
 #' 
 #' Let's visualize the transformation
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 sapply(posts, class)$Timestamp
 
 #' 
@@ -207,7 +227,7 @@ sapply(posts, class)$Timestamp
 #' 
 #' Since BodyLinks values are in the string form, we need firstly to deal with BodyLinks datatype, turning it into a vector. Then we can execute the needed procedure.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[, BodyLinks := (str_replace_all(BodyLinks, '^\\[', "") %>%
                         str_replace_all(., '\\]$', "")
                       )
@@ -218,14 +238,14 @@ posts[, BodyLinks := list(strsplit(BodyLinks, split = ", "))]
 #' 
 #' The following code then extract the first link from the BodyLinks column and put it in the MainLink column, for posts that are links.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[, MainLink := ifelse(MainLink=='None', sapply(BodyLinks, `[`, 1), MainLink)]
 
 #' 
 #' 
 #' #### SatsReceivedComments variable
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[ , SatsReceivedComments := (str_replace_all(SatsReceivedComments, "k sats$", "000") %>%
                                     str_replace_all(., "m sats$", "000000") %>%
                                     str_replace_all(., " sats$", "") %>%
@@ -239,15 +259,25 @@ posts[, SatsReceivedComments := as.numeric(SatsReceivedComments)]
 
 #' 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts[SatsReceivedComments<1000] %>%
   ggplot()+
   geom_histogram(aes(x = SatsReceivedComments), bins = 30)
 
 #' 
+#' #### CommentsItemCode variable
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
+posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
+                        str_replace_all(., '\\]$', "")
+                      )
+      ]
+
+#' 
+#' 
 #' ### Comments
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 str(comments)
 
 #' 
@@ -264,7 +294,7 @@ str(comments)
 #' 
 #' #### Sats variable
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 comments[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
                     str_replace_all(., "m sats$", "000000") %>%
                     str_replace_all(., " sats$", "") %>%
@@ -279,7 +309,7 @@ comments[ , Sats := as.numeric(Sats)]
 #' 
 #' The median of the Sats distribution is `r na.omit(comments, "Sats")[, median(Sats)]`
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 comments[Sats<1000] %>%
   ggplot()+
   geom_histogram(aes(x = Sats))
@@ -287,7 +317,7 @@ comments[Sats<1000] %>%
 #' 
 #' #### Boost variable
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 comments[ , Boost := (str_replace_all(Boost, "k boost$", "000") %>%
                     str_replace_all(., " boost$", "")
                   )
@@ -300,7 +330,7 @@ comments[, Boost := as.numeric(Boost)]
 #' 
 #' Note that the previous procedure introduced `r sum(is.na(comments[,Boost]))` NA values for the Boost variable. In fact the majority of the comments didn't receive boosts, which is quite reasonable since boosts are used to increase visibility of posts just like sponsored features in other social media, and usually comments are not so worth to be promoted because they are strictly related to the post they refer to.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 comments %>%
   ggplot()+
   geom_histogram(aes(x = Boost))
@@ -308,15 +338,15 @@ comments %>%
 #' 
 #' #### Timestamp variable
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 comments[, Timestamp := ymd_hms(Timestamp)]
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 sapply(comments, class)$Timestamp
 
 #' 
-#' ### Dataframe for graph creation
+#' ## General forum graph
 #' 
 #' The graph will be a graph of users and the links they have between each other within the platform.
 #' Every node is a user, edges are the interactions between users. Every edge has a different weight based on the amount of interactions between users, namely 'how many times users commented each other's posts'.
@@ -328,112 +358,121 @@ sapply(comments, class)$Timestamp
 #' 
 #' Where `User1` and `User2` is the unique couple of users and the `weight` is the counter of interactions that the unique user couple had.
 #' 
-#' #### Explosion of `CommentsItemCode` variable
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
-posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
-                        str_replace_all(., '\\]$', "")
-                      )
-      ]
-
+#' ### Explosion of `CommentsItemCode` variable
 #' 
 #' The following command creates a data.table object that has 2 columns containing the post code and the comment code, respectively.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts_graph <- copy(posts)
 posts_graph <- posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
 
 #' 
-#' #### Merging graph table and posts table to obtain again the post author
+#' ### Merging graph table and posts table to obtain again the post author
 #' 
-#' **Please note that we can obtain every needed information from this merge and subsetting process**
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts_graph <- merge(posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts_graph <- posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
 
 #' 
-#' #### Merging graph table and comments table to obtain the comment author
+#' ### Merging graph table and comments table to obtain the comment author
 #' 
-#' **Please note that we can obtain every needed information from this merge and subsetting process**
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts_graph <- merge(posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 posts_graph <- posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
 
 #' 
-#' #### Resulting table 
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
-head(posts_graph)
-
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 final_graph <- posts_graph[, .(PostAuthor, CommentAuthor)]
 
 #' 
-#' 
 #' ### Graph features
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 g <- graph_from_data_frame(final_graph, directed = F)
 
-#' 
-#' #### 
-#' 
-#' The edges are all the links between users. This result must be adjusted with the elimination of loops. Loops are links that connect a node to itself; in this situation a post author that commented on his/her own post creates a loop.
-#' 
-#' The vertices are all the users in the graph.
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
-E(g)
-V(g)
-
-#' 
-#' #### Simplify graph
 #' 
 #' The following function simplifies the graph, meaning that gives the option to eliminate loops and multiple edges.
 #' Loop edges are edges with the same vertex endpoint; multiple edges are edges that have all the same respective endpoints.
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 simple_g <- simplify(g, remove.multiple = T, remove.loops = T)
 
 #' 
-#' The following command extracts the edge list
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
-head(as_edgelist(simple_g, names=T))
-
-#' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 plot(degree.distribution(simple_g))
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 edge_density(simple_g)
 
 #' 
-#' **WE MUST ADD THE LABEL TO ADMINISTRATORS IN ORDER TO DO THE BIPARTITE GRAPH**
+#' ## Temporal analysis
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
-#plot(simple_g, layout = layout_as_bipartite, vertex.label = NA)
+#' The following code chunck divides the posts and the comments table into several tables, based on the timestamp
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
+p_first_period = posts[Timestamp %between% c("2021-06-01","2021-12-31")]
+p_second_period = posts[Timestamp %between% c("2022-01-01","2022-05-31")]
+p_third_period = posts[Timestamp %between% c("2022-06-01","2022-12-31")]
+p_fourth_period = posts[Timestamp %between% c("2023-01-01","2023-05-31")]
+p_fifth_period = posts[Timestamp %between% c("2023-06-01","2023-12-31")]
+
+c_first_period = comments[Timestamp %between% c("2021-06-01","2021-12-31")]
+c_second_period = comments[Timestamp %between% c("2022-01-01","2022-05-31")]
+c_third_period = comments[Timestamp %between% c("2022-06-01","2022-12-31")]
+c_fourth_period = comments[Timestamp %between% c("2023-01-01","2023-05-31")]
+c_fifth_period = comments[Timestamp %between% c("2023-06-01","2023-12-31")]
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
-# plot(
-#   simple_g,
-#   layout = layout_components, 
-#   vertex.label = NA
-#   )
+#' ### First graph (06/2021 - 12/2021)
+#' 
+#' The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
+p_first_posts_graph <- copy(p_first_period)
+p_first_posts_graph <- p_first_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+
+p_first_posts_graph <- merge(p_first_posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+
+p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+
+p_first_posts_graph <- merge(p_first_posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+
+p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+
+final_p_first_posts_graph <- p_first_posts_graph[, .(PostAuthor, CommentAuthor)]
+
+g_first_posts <- simplify(graph_from_data_frame(final_p_first_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
+
+nyms <- ifelse(V(g_first_posts)$name %in% contrib, "contributor", "other")
+
+g_first_posts <- set_vertex_attr(g_first_posts, "type", value = nyms)
 
 #' 
-#' **We clearly need to insert some kind of sorting method in order to capture only a subset of users**
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
+coul  <- brewer.pal(3, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_first_posts)$type))]
+
+plot(g_first_posts,
+  vertex.label = NA,
+  vertex.color = my_color,
+  layout = layout_nicely,
+  vertex.size=4,
+  edge.width=0.5,
+  edge.color="lightgrey",
+  xlim = c(-0.1, 0.1),
+  ylim = c(-1, 1),
+  )
+
+#' 
+#' 
+#' 
 #' 
 #' 
 #' 
@@ -442,12 +481,12 @@ edge_density(simple_g)
 #' 
 #' # Render markdown as Rscript
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
 # knitr::purl(input = 'analysis.Rmd',
-#             output = 'scripts/analysis.R',
+#             output = '../scripts/analysis.R',
 #             documentation = 2
 #             )
-#'
+
 #' 
 #' 
 #' 

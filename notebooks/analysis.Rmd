@@ -346,7 +346,7 @@ comments[, Timestamp := ymd_hms(Timestamp)]
 sapply(comments, class)$Timestamp
 ```
 
-### Dataframe for graph creation
+## General forum graph
 
 The graph will be a graph of users and the links they have between each other within the platform.
 Every node is a user, edges are the interactions between users. Every edge has a different weight based on the amount of interactions between users, namely 'how many times users commented each other's posts'.
@@ -358,7 +358,7 @@ In order to elaborate data with igraph library in the desired manner, further da
 
 Where `User1` and `User2` is the unique couple of users and the `weight` is the counter of interactions that the unique user couple had.
 
-#### Explosion of `CommentsItemCode` variable
+### Explosion of `CommentsItemCode` variable
 
 The following command creates a data.table object that has 2 columns containing the post code and the comment code, respectively.
 
@@ -367,9 +367,7 @@ posts_graph <- copy(posts)
 posts_graph <- posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
 ```
 
-#### Merging graph table and posts table to obtain again the post author
-
-**Please note that we can obtain every needed information from this merge and subsetting process**
+### Merging graph table and posts table to obtain again the post author
 
 ```{r}
 posts_graph <- merge(posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
@@ -379,9 +377,7 @@ posts_graph <- merge(posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
 posts_graph <- posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
 ```
 
-#### Merging graph table and comments table to obtain the comment author
-
-**Please note that we can obtain every needed information from this merge and subsetting process**
+### Merging graph table and comments table to obtain the comment author
 
 ```{r}
 posts_graph <- merge(posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
@@ -391,16 +387,9 @@ posts_graph <- merge(posts_graph, comments, by.x = 'CommentItemCode', by.y = 'It
 posts_graph <- posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
 ```
 
-#### Resulting table 
-
-```{r}
-head(posts_graph)
-```
-
 ```{r}
 final_graph <- posts_graph[, .(PostAuthor, CommentAuthor)]
 ```
-
 
 ### Graph features
 
@@ -408,63 +397,11 @@ final_graph <- posts_graph[, .(PostAuthor, CommentAuthor)]
 g <- graph_from_data_frame(final_graph, directed = F)
 ```
 
-#### 
-
-The edges are all the links between users. This result must be adjusted with the elimination of loops. Loops are links that connect a node to itself; in this situation a post author that commented on his/her own post creates a loop.
-
-The vertices are all the users in the graph.
-
-```{r}
-E(g)
-V(g)
-```
-
-We now need to find out the precise subset of users that are actually vertexes.
-
-```{r}
-users[, unique(Role)]
-```
-
-
-```{r}
-nyms <- V(g)$name
-nyms <- setDT(data.frame(nyms))
-
-sum(is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T, all.y = T)$Role))
-sum(is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)$Role))
-
-merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T, all.y = T)
-
-merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)                           # I don't have an entry in users table for some vertex
-
-is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)$TotalStacked)
-```
-
-From the previous reasoning I'm left with the following options:
-
-1. Using for the graph only the users for which I have an entry in Users table;
-2. Using for the graph also the users that have a vertex but do not have a corresponding entry in the users table.
-
-The consequence of 1 is that I'm left with 5208 users, I have to rebuild a graph with those; the consequence of 2 is that I do not have anagraphic information for some users (~300), nor I have the Role or the StackedAmount. The second option doesn't seem to be a problem, we just need to understand why I'm left with less users in the users table after the scraping (because the list through which we loop is the list of all the unique users that posted or commented at least once).
-
-```{r}
-#V(g)$type <- 
-```
-
-
-#### Simplify graph
-
 The following function simplifies the graph, meaning that gives the option to eliminate loops and multiple edges.
 Loop edges are edges with the same vertex endpoint; multiple edges are edges that have all the same respective endpoints.
 
 ```{r}
 simple_g <- simplify(g, remove.multiple = T, remove.loops = T)
-```
-
-The following command extracts the edge list
-
-```{r}
-head(as_edgelist(simple_g, names=T))
 ```
 
 ```{r}
@@ -475,23 +412,9 @@ plot(degree.distribution(simple_g))
 edge_density(simple_g)
 ```
 
-```{r}
-#simple_g <- set_vertex_attr(simple_g, "type", index = contrib, value = rep("contrib", length(contrib)))
+## Temporal analysis
 
-#simple_g <- set_vertex_attr(simple_g, "type", index = valid_nyms, value = filtered_roles)
-```
-
-```{r}
-#plot(simple_g, layout = layout_as_bipartite)
-```
-
-```{r}
-# plot(
-#   simple_g,
-#   layout = layout_components, 
-#   vertex.label = NA
-#   )
-```
+The following code chunck divides the posts and the comments table into several tables, based on the timestamp
 
 ```{r}
 p_first_period = posts[Timestamp %between% c("2021-06-01","2021-12-31")]
@@ -506,6 +429,10 @@ c_third_period = comments[Timestamp %between% c("2022-06-01","2022-12-31")]
 c_fourth_period = comments[Timestamp %between% c("2023-01-01","2023-05-31")]
 c_fifth_period = comments[Timestamp %between% c("2023-06-01","2023-12-31")]
 ```
+
+### First graph (06/2021 - 12/2021)
+
+The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
 
 ```{r}
 p_first_posts_graph <- copy(p_first_period)
@@ -532,7 +459,7 @@ g_first_posts <- set_vertex_attr(g_first_posts, "type", value = nyms)
 coul  <- brewer.pal(3, "Set1") 
 my_color = coul[as.numeric(as.factor(V(g_first_posts)$type))]
 
-plot(simplify(g_first_posts, remove.multiple = T, remove.loops = T),
+plot(g_first_posts,
   vertex.label = NA,
   vertex.color = my_color,
   layout = layout_nicely,
@@ -555,10 +482,10 @@ plot(simplify(g_first_posts, remove.multiple = T, remove.loops = T),
 # Render markdown as Rscript
 
 ```{r}
-# knitr::purl(input = 'analysis.Rmd',
-#             output = '../scripts/analysis.R',
-#             documentation = 2
-#             )
+knitr::purl(input = 'analysis.Rmd',
+            output = '../scripts/analysis.R',
+            documentation = 2
+            )
 ```
 
 
