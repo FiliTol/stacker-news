@@ -23,6 +23,7 @@ library(ggplot2)
 library(stringr)
 library(lubridate)
 library(RColorBrewer)
+library(dplyr)
 ```
 
 ## Data importing, cleaning and manipulation
@@ -432,17 +433,23 @@ c_fifth_period = comments[Timestamp %between% c("2023-06-01","2023-12-31")]
 
 ### First graph (06/2021 - 12/2021)
 
+```{r warning=F}
+ggplot(data = p_first_period)+
+  geom_area(aes(x = Timestamp, y = Comments))+
+  scale_y_log10()
+```
+
 The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
 
 ```{r}
 p_first_posts_graph <- copy(p_first_period)
 p_first_posts_graph <- p_first_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
 
-p_first_posts_graph <- merge(p_first_posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+p_first_posts_graph <- merge(p_first_posts_graph, p_first_period, by.x = 'ItemCode', by.y = 'ItemCode')
 
 p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
 
-p_first_posts_graph <- merge(p_first_posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+p_first_posts_graph <- merge(p_first_posts_graph, c_first_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
 
 p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
 
@@ -463,6 +470,199 @@ plot(g_first_posts,
   vertex.label = NA,
   vertex.color = my_color,
   layout = layout_nicely,
+  vertex.size=4,
+  edge.width=0.5,
+  edge.color="lightgrey",
+  xlim = c(-0.1, 0.1),
+  ylim = c(-1, 1),
+  )
+```
+
+### Second graph (01/2022 - 05/2022)
+
+```{r warning=F}
+ggplot(data = p_second_period)+
+  geom_area(aes(x = Timestamp, y = Comments))+
+  scale_y_log10()
+```
+
+The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
+
+```{r}
+p_second_posts_graph <- copy(p_second_period)
+p_second_posts_graph <- p_second_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+
+p_second_posts_graph <- merge(p_second_posts_graph, p_second_period, by.x = 'ItemCode', by.y = 'ItemCode')
+
+p_second_posts_graph <- p_second_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+
+p_second_posts_graph <- merge(p_second_posts_graph, c_second_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
+
+p_second_posts_graph <- p_second_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+
+final_p_second_posts_graph <- p_second_posts_graph[, .(PostAuthor, CommentAuthor)]
+
+g_second_posts <- simplify(graph_from_data_frame(final_p_second_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
+
+nyms <- ifelse(V(g_second_posts)$name %in% contrib, "contributor", "other")
+
+g_second_posts <- set_vertex_attr(g_second_posts, "type", value = nyms)
+```
+
+```{r}
+coul  <- brewer.pal(3, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_second_posts)$type))]
+
+plot(g_second_posts,
+  vertex.label = NA,
+  vertex.color = my_color,
+  layout = layout_nicely,
+  vertex.size=4,
+  edge.width=0.5,
+  edge.color="lightgrey",
+  xlim = c(-0.1, 0.1),
+  ylim = c(-1, 1),
+  )
+```
+
+### Third graph (06/2022 - 12/2022)
+
+```{r warning=F}
+ggplot(data = p_third_period)+
+  geom_area(aes(x = Timestamp, y = Comments))+
+  scale_y_log10()
+```
+
+The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
+
+```{r}
+p_third_posts_graph <- copy(p_third_period)
+p_third_posts_graph <- p_third_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+
+p_third_posts_graph <- merge(p_third_posts_graph, p_third_period, by.x = 'ItemCode', by.y = 'ItemCode')
+
+p_third_posts_graph <- p_third_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+
+p_third_posts_graph <- merge(p_third_posts_graph, c_third_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
+
+p_third_posts_graph <- p_third_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+
+final_p_third_posts_graph <- p_third_posts_graph[, .(PostAuthor, CommentAuthor)]
+
+g_third_posts <- simplify(graph_from_data_frame(final_p_third_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
+
+nyms <- ifelse(V(g_third_posts)$name %in% contrib, "contributor", "other")
+
+g_third_posts <- set_vertex_attr(g_third_posts, "type", value = nyms)
+```
+
+```{r}
+coul  <- brewer.pal(3, "Set1")
+my_color = coul[as.numeric(as.factor(V(g_third_posts)$type))]
+
+plot(g_third_posts,
+  vertex.label = NA,
+  vertex.color = my_color,
+  layout = layout_components,
+  vertex.size=4,
+  edge.width=0.5,
+  edge.color="lightgrey",
+  xlim = c(-0.1, 0.1),
+  ylim = c(-1, 1),
+  )
+```
+
+
+### Fourth graph (01/2023 - 05/2023)
+
+```{r warning=F}
+ggplot(data = p_fourth_period)+
+  geom_area(aes(x = Timestamp, y = Comments))+
+  scale_y_log10()
+```
+
+The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
+
+```{r}
+p_fourth_posts_graph <- copy(p_fourth_period)
+p_fourth_posts_graph <- p_fourth_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+
+p_fourth_posts_graph <- merge(p_fourth_posts_graph, p_fourth_period, by.x = 'ItemCode', by.y = 'ItemCode')
+
+p_fourth_posts_graph <- p_fourth_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+
+p_fourth_posts_graph <- merge(p_fourth_posts_graph, c_fourth_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
+
+p_fourth_posts_graph <- p_fourth_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+
+final_p_fourth_posts_graph <- p_fourth_posts_graph[, .(PostAuthor, CommentAuthor)]
+
+g_fourth_posts <- simplify(graph_from_data_frame(final_p_fourth_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
+
+nyms <- ifelse(V(g_fourth_posts)$name %in% contrib, "contributor", "other")
+
+g_fourth_posts <- set_vertex_attr(g_fourth_posts, "type", value = nyms)
+```
+
+```{r}
+coul  <- brewer.pal(3, "Set1")
+my_color = coul[as.numeric(as.factor(V(g_fourth_posts)$type))]
+
+plot(g_fourth_posts,
+  vertex.label = NA,
+  vertex.color = my_color,
+  layout = layout_components,
+  vertex.size=4,
+  edge.width=0.5,
+  edge.color="lightgrey",
+  xlim = c(-0.1, 0.1),
+  ylim = c(-1, 1),
+  )
+```
+
+
+### Fifth graph (06/2023 - 10/2023)
+
+```{r warning=F}
+ggplot(data = p_fifth_period)+
+  geom_area(aes(x = Timestamp, y = Comments))+
+  scale_y_log10()
+```
+
+The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
+
+```{r}
+p_fifth_posts_graph <- copy(p_fifth_period)
+
+p_fifth_posts_graph[1, CommentsItemCode := NA]
+
+p_fifth_posts_graph <- p_fifth_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+
+p_fifth_posts_graph <- merge(p_fifth_posts_graph, p_fifth_period, by.x = 'ItemCode', by.y = 'ItemCode')
+
+p_fifth_posts_graph <- p_fifth_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+
+p_fifth_posts_graph <- merge(p_fifth_posts_graph, c_fifth_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
+
+p_fifth_posts_graph <- p_fifth_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+
+final_p_fifth_posts_graph <- p_fifth_posts_graph[, .(PostAuthor, CommentAuthor)]
+
+g_fifth_posts <- simplify(graph_from_data_frame(final_p_fifth_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
+
+nyms <- ifelse(V(g_fifth_posts)$name %in% contrib, "contributor", "other")
+
+g_fifth_posts <- set_vertex_attr(g_fifth_posts, "type", value = nyms)
+```
+
+```{r}
+coul  <- brewer.pal(3, "Set1")
+my_color = coul[as.numeric(as.factor(V(g_fifth_posts)$type))]
+
+plot(g_fifth_posts,
+  vertex.label = NA,
+  vertex.color = my_color,
+  layout = layout_components,
   vertex.size=4,
   edge.width=0.5,
   edge.color="lightgrey",
