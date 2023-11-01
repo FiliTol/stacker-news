@@ -22,6 +22,7 @@ library(igraph)
 library(ggplot2)
 library(stringr)
 library(lubridate)
+library(RColorBrewer)
 ```
 
 ## Data importing, cleaning and manipulation
@@ -264,6 +265,16 @@ posts[SatsReceivedComments<1000] %>%
   geom_histogram(aes(x = SatsReceivedComments), bins = 30)
 ```
 
+#### CommentsItemCode variable
+
+```{r}
+posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
+                        str_replace_all(., '\\]$', "")
+                      )
+      ]
+```
+
+
 ### Comments
 
 ```{r}
@@ -349,13 +360,6 @@ Where `User1` and `User2` is the unique couple of users and the `weight` is the 
 
 #### Explosion of `CommentsItemCode` variable
 
-```{r}
-posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
-                        str_replace_all(., '\\]$', "")
-                      )
-      ]
-```
-
 The following command creates a data.table object that has 2 columns containing the post code and the comment code, respectively.
 
 ```{r}
@@ -427,10 +431,11 @@ nyms <- V(g)$name
 nyms <- setDT(data.frame(nyms))
 
 sum(is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T, all.y = T)$Role))
+sum(is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)$Role))
 
 merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T, all.y = T)
 
-merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)                           # I don't have a users entry for some vertex
+merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)                           # I don't have an entry in users table for some vertex
 
 is.na(merge(nyms, users, by.x = 'nyms', by.y = 'User', all.x = T)$TotalStacked)
 ```
@@ -488,10 +493,56 @@ edge_density(simple_g)
 #   )
 ```
 
+```{r}
+p_first_period = posts[Timestamp %between% c("2021-06-01","2021-12-31")]
+p_second_period = posts[Timestamp %between% c("2022-01-01","2022-05-31")]
+p_third_period = posts[Timestamp %between% c("2022-06-01","2022-12-31")]
+p_fourth_period = posts[Timestamp %between% c("2023-01-01","2023-05-31")]
+p_fifth_period = posts[Timestamp %between% c("2023-06-01","2023-12-31")]
 
+c_first_period = comments[Timestamp %between% c("2021-06-01","2021-12-31")]
+c_second_period = comments[Timestamp %between% c("2022-01-01","2022-05-31")]
+c_third_period = comments[Timestamp %between% c("2022-06-01","2022-12-31")]
+c_fourth_period = comments[Timestamp %between% c("2023-01-01","2023-05-31")]
+c_fifth_period = comments[Timestamp %between% c("2023-06-01","2023-12-31")]
+```
 
+```{r}
+p_first_posts_graph <- copy(p_first_period)
+p_first_posts_graph <- p_first_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
 
+p_first_posts_graph <- merge(p_first_posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
 
+p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+
+p_first_posts_graph <- merge(p_first_posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+
+p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+
+final_p_first_posts_graph <- p_first_posts_graph[, .(PostAuthor, CommentAuthor)]
+
+g_first_posts <- simplify(graph_from_data_frame(final_p_first_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
+
+nyms <- ifelse(V(g_first_posts)$name %in% contrib, "contributor", "other")
+
+g_first_posts <- set_vertex_attr(g_first_posts, "type", value = nyms)
+```
+
+```{r}
+coul  <- brewer.pal(3, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_first_posts)$type))]
+
+plot(simplify(g_first_posts, remove.multiple = T, remove.loops = T),
+  vertex.label = NA,
+  vertex.color = my_color,
+  layout = layout_nicely,
+  vertex.size=4,
+  edge.width=0.5,
+  edge.color="lightgrey",
+  xlim = c(-0.1, 0.1),
+  ylim = c(-1, 1),
+  )
+```
 
 
 
