@@ -24,7 +24,7 @@ library(tidyverse)
 
 # Data Import
 ```{r Query to database}
-conn <- connection_open(SQLite(), "stacker_news.sqlite")
+conn <- connection_open(SQLite(), "../data/stacker_news.sqlite")
 users <- setDT(dbGetQuery(conn, "SELECT * FROM user"))
 comments <- setDT(dbGetQuery(conn, "SELECT * FROM comments"))
 posts <- setDT(dbGetQuery(conn, "SELECT * FROM post"))
