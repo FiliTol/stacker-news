@@ -14,3 +14,4 @@ qodana.yaml
 stacker_news.sqlite
 outputs/
 notebooks/
+scripts/R/analysis.R
