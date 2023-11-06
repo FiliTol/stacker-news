@@ -13,3 +13,4 @@ tests/
 qodana.yaml
 stacker_news.sqlite
 outputs/
+notebooks/

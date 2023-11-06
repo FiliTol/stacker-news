@@ -1,17 +1,14 @@
 #' ---
-#' title: "Stacker News"
-#' subtitle: "An analysis of a payment-based online forum"
-#' author: "Alberto & Filippo"
-#' date: "2023-10-27"
-#' output: 
-#'   html_document: 
+#' title: "Untitled"
+#' author: "Alberto Bersan 879597"
+#' date: "2023-11-02"
+#' output:
+#'   html_document:
 #'     toc: true
-#' knit: (function(inputFile, encoding) {
-#'     rmarkdown::render(inputFile, encoding = "UTF-8", output_dir = "../outputs/")
-#'   })
+#'     toc_depth: 3
 #' ---
-#' 
-## ----setup, include=FALSE-----------------------------------------------------------------------------------------------------------
+#' # Library
+## ---------------------------------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 library(remotes)
 #remotes::install_github("edgararuiz/connections")
@@ -22,15 +19,12 @@ library(igraph)
 library(ggplot2)
 library(stringr)
 library(lubridate)
-library(RColorBrewer)
-library(dplyr)
+library(tidyverse)
 
 #' 
-#' ## Data importing, cleaning and manipulation
-#' 
-## ----Query to database--------------------------------------------------------------------------------------------------------------
+#' # Data Import
+## ----Query to database------------------------------------------------------------------------------------------------------------
 conn <- connection_open(SQLite(), "../data/stacker_news.sqlite")
-
 users <- setDT(dbGetQuery(conn, "SELECT * FROM user"))
 comments <- setDT(dbGetQuery(conn, "SELECT * FROM comments"))
 posts <- setDT(dbGetQuery(conn, "SELECT * FROM post"))
@@ -38,42 +32,15 @@ posts <- setDT(dbGetQuery(conn, "SELECT * FROM post"))
 connection_close(conn)
 
 #' 
-#' Please note that while scraping data were all saved in 'string` form to better
-#' manage datatypes in the database
-#' 
-#' ### Users
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-str(users)
-
-#' 
-#' Users table contains five variables.
-#' 
-#' - `User` is a string, the username;
-#' - `TotalStacked` is the total amount of sat ever stacked by the user -> need it as integer;
-#' - `FirstItem` is the number of the first post that the user created, if any;
-#' - `HatStreak` is the number of cowboy hat streaks that the user achieved, if any -> need it as integer;
-#' - `NumItems` is the total number of items created by the user in the forum, if any -> need it as integer.
-#' 
-#' The following chunck changes the needed variables into the needed datatype
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+#' # PART 1. Data Cleaning
+## ---------------------------------------------------------------------------------------------------------------------------------
 change_columns <- c("TotalStacked", "HatStreak", "NumItems")  
 users[ , (change_columns) := lapply(.SD, as.numeric), .SDcols = change_columns]
-
-#' 
-#' Result of the transformation
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
 sapply(users, class)
 
 #' 
-#' #### Adding user label
-#' 
-#' In order to analyse the user base, here we procede to add a new column to the table called `Role`. The variable has the value `contributor` if the user is a forum administrator, `other` otherwise.
-#' The roles of users are extracted by looking at [this file](https://github.com/stackernews/stacker.news/blob/master/contributors.txt) in the github page of the project.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+#' ### users label
+## ---------------------------------------------------------------------------------------------------------------------------------
 contrib <- c("k00b",
                   "kr",
                   "ekzyis",
@@ -86,37 +53,9 @@ contrib <- c("k00b",
 users[, Role := ifelse(User %in% contrib, "contributor", "other")]
 
 #' 
-#' 
-#' ### Posts
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-str(posts)
-
-#' 
-#' Post table contains 13 variables.
-#' 
-#' - `Title` is the post title;
-#' - `Category` is the post category;
-#' - `ItemCode` is the unique identifier for the post;
-#' - `Sats` is the number of sat stacked by the post -> need it as integer;
-#' - `Boost` is the number of boosts assigned to the post. Boosts are needed to speed up the post diffusion in the forum (kind of advertising) -> need it as integer;
-#' - `Comments` is the number of comments -> need it as integer;
-#' - `Author` is the username of the post author;
-#' - `Tag` is the tag assigned to the post by the author;
-#' - `Timestamp` is the timestamp of the creation of the post -> need it in datetime;
-#' - `MainLink` is the main link displayed by the post, a post has a main link if it has the *link* category, if not then the value is NA;
-#' - `BodyLinks` is the field containing a string in which all the links in the body post and comments are contained. If the post contains no link, then the string is empty;
-#' - `SatsReceivedComments` is the total number of sat received by the comments to the post -> need it as integer;
-#' - `CommentsItemCode` is the list of item codes of the comments.
-#' 
-#' Multiple variables of this table must be transformed into the proper data type, however some of those cannot be transformed straightforwardly because of multiple formatting errors. A more profund data cleaning is needed before the datatype transformation.
-#' 
-#' #### Sats variable
-#' 
-#' This variable has to be transformed into numeric type, however beforehand we must cut away the postfix 'sats' or 'sat' from the stings.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-# Substitute rounding of thousands 'k' and millions 'm' into integers
+#' ### Sats and Boost k 
+## ---------------------------------------------------------------------------------------------------------------------------------
+# Substitute rounding of thousands 'k' and millions 'm' into integers (sats)
 posts[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
                     str_replace_all(., "m sats$", "000000") %>%
                     str_replace_all(., " sats$", "") %>%
@@ -129,41 +68,7 @@ posts[, Sats := ifelse(str_detect(Sats, "\\."), str_sub(str_replace_all(Sats, "\
 # Turn variable in numeric
 posts[ , Sats := as.numeric(Sats)] 
 
-#' 
-#' Please note that we are left some NAs. These items with Sats=NA are items that don't have the Sats field in the post template because they are created by the forum administrator and they cannot be tipped.
-#' Also 37 of them are created by the user 'ad', who is a bot defined by the forum creator to broadcast ads as posts. Those items cannot be tipped too.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-# Test if we managed None values correctly
-nrow(posts[is.na(Sats)]) == nrow(posts[is.na(Sats) & Author=='saloon']) + nrow(posts[is.na(Sats) & Author=='ad'])
-
-#' 
-#' Now the `Sats` column contains only numeric values (the amount of sat stacked by the post) and the NAs are all related to posts that actually didn't receive Sats because of structural reasons.
-#' 
-#' The following graph shows the distribution of sats within the posts. The distribution is clearly asymmetric and has the majority of the posts with an amount of sats stacked very close to zero.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts %>%
-  ggplot()+
-  geom_density(aes(x = Sats))
-
-#' 
-#' By filtering the amount of sats to a reasonable value is possible to observe the distribution, with the median value of sats stacked by a post equal to `r na.omit(posts, "Sats")[, median(Sats)]`
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts[Sats<1000] %>%
-  ggplot()+
-  geom_histogram(aes(x = Sats))
-
-#' 
-#' 
-#' #### Boost variable
-#' 
-#' In order to deal with the thousands (k) and the decimals, we use the same technique already applied for the Sats variable.
-#' Then the Boost variable is turned into numeric and some NAs are introduced. The majority of the posts, more precisely `r nrow(posts[is.na(Boost)])` posts, do not have boost (because they are not sponsored posts). Therefore the majority of the Boost values will be NAs.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-# Substitute rounding of thousands 'k'
+# Substitute rounding of thousands 'k' (boost)
 posts[ , Boost := (str_replace_all(Boost, "k boost$", "000") %>%
                     str_replace_all(., " boost$", "")
                   )
@@ -174,61 +79,20 @@ posts[, Boost := ifelse(str_detect(Boost, "\\."), str_sub(str_replace_all(Boost,
 posts[, Boost := as.numeric(Boost)]
 
 #' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts %>%
-  ggplot()+
-  geom_histogram(aes(x=Boost), bins=30)
+#' Test if we managed None values correctly
+## ---------------------------------------------------------------------------------------------------------------------------------
+
+nrow(posts[is.na(Sats)]) == nrow(posts[is.na(Sats) & Author=='saloon']) + nrow(posts[is.na(Sats) & Author=='ad'])
 
 #' 
-#' #### Comments variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts[, Comments := (str_replace_all(Comments, " comments", "") %>%
-                       str_replace_all(., " comment", "")
-                     )
-      ]
-
-posts[, Comments := as.numeric(Comments)]
-
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts %>%
-  ggplot()+
-  geom_histogram(aes(x=Comments))
-
-#' 
-#' #### Timestamp variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+#' ### Timestamp variable
+## ---------------------------------------------------------------------------------------------------------------------------------
 posts[, Timestamp := ymd_hms(Timestamp)]
 
 #' 
-#' Let's visualize the transformation
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-sapply(posts, class)$Timestamp
-
-#' 
-#' #### MainLink and BodyLinks variable
-#' 
-#' This variable shows the main link for 'link' posts.
-#' This variable has been massively affected by an error during the scraping. The result of that process are widely diffused miss-classification of links that are consistent throughout the dataset, so we can deal with those straightforwardly.
-#' 
-#' Namely:
-#' 
-#' - If the value of MainLink is a string with a link, then the scraping had the desired outcome;
-#' - If the value of MainLink is 'None', then the item has a Link but it was wrongfully stored as the first element of the BodyLinks variable;
-#' - If the value of MainLink is NA, then the item does not have a main link (because it does not belong to the category 'link')
-#' 
-#' The result of this is that:
-#' 
-#' - for MainLink='None' we need to move the first link in BodyLinks to MainLink;
-#' - All the other cases are correct.
-#' 
+#' ### Bodylink
 #' Since BodyLinks values are in the string form, we need firstly to deal with BodyLinks datatype, turning it into a vector. Then we can execute the needed procedure.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------
 posts[, BodyLinks := (str_replace_all(BodyLinks, '^\\[', "") %>%
                         str_replace_all(., '\\]$', "")
                       )
@@ -238,15 +102,12 @@ posts[, BodyLinks := list(strsplit(BodyLinks, split = ", "))]
 
 #' 
 #' The following code then extract the first link from the BodyLinks column and put it in the MainLink column, for posts that are links.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------------------
 posts[, MainLink := ifelse(MainLink=='None', sapply(BodyLinks, `[`, 1), MainLink)]
 
 #' 
-#' 
-#' #### SatsReceivedComments variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+#' ### SatsReceivedComments variable
+## ---------------------------------------------------------------------------------------------------------------------------------
 posts[ , SatsReceivedComments := (str_replace_all(SatsReceivedComments, "k sats$", "000") %>%
                                     str_replace_all(., "m sats$", "000000") %>%
                                     str_replace_all(., " sats$", "") %>%
@@ -259,43 +120,8 @@ posts[, SatsReceivedComments := ifelse(str_detect(SatsReceivedComments, "\\."), 
 posts[, SatsReceivedComments := as.numeric(SatsReceivedComments)]
 
 #' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts[SatsReceivedComments<1000] %>%
-  ggplot()+
-  geom_histogram(aes(x = SatsReceivedComments), bins = 30)
-
-#' 
-#' #### CommentsItemCode variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
-                        str_replace_all(., '\\]$', "")
-                      )
-      ]
-
-#' 
-#' 
-#' ### Comments
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-str(comments)
-
-#' 
-#' Comments table contains 8 variables:
-#' 
-#' - `ItemCode` is a sting, the unique code assigned to the comment;
-#' - `Sats` is the amount of sats stacked by the comment -> need it as integer;
-#' - `Boost` is the number of boosts received by the comment -> need it as integer;
-#' - `Comments` is the number of replies that the comment had -> need it as integer;
-#' - `Author` is the name of the author;
-#' - `Tag` is the tag assigned to the post by the author;
-#' - `Timestamp` is the timestamp of the creation of the post -> need it in datetime;
-#' - `CommentsItemCode` is the list of item codes of the comments.
-#' 
-#' #### Sats variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+#' ### Sats variable
+## ---------------------------------------------------------------------------------------------------------------------------------
 comments[ , Sats := (str_replace_all(Sats, "k sats$", "000") %>%
                     str_replace_all(., "m sats$", "000000") %>%
                     str_replace_all(., " sats$", "") %>%
@@ -307,117 +133,12 @@ comments[, Sats := ifelse(str_detect(Sats, "\\."), str_sub(str_replace_all(Sats,
 
 comments[ , Sats := as.numeric(Sats)] 
 
+#' #----------------------------------------------------------------------------------------------------------------------
 #' 
-#' The median of the Sats distribution is `r na.omit(comments, "Sats")[, median(Sats)]`
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-comments[Sats<1000] %>%
-  ggplot()+
-  geom_histogram(aes(x = Sats))
-
-#' 
-#' #### Boost variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-comments[ , Boost := (str_replace_all(Boost, "k boost$", "000") %>%
-                    str_replace_all(., " boost$", "")
-                  )
-       ]
-
-comments[, Boost := ifelse(str_detect(Boost, "\\."), str_sub(str_replace_all(Boost, "\\.", ""), end = -2), Boost)]
-
-comments[, Boost := as.numeric(Boost)]
-
-#' 
-#' Note that the previous procedure introduced `r sum(is.na(comments[,Boost]))` NA values for the Boost variable. In fact the majority of the comments didn't receive boosts, which is quite reasonable since boosts are used to increase visibility of posts just like sponsored features in other social media, and usually comments are not so worth to be promoted because they are strictly related to the post they refer to.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-comments %>%
-  ggplot()+
-  geom_histogram(aes(x = Boost))
-
-#' 
-#' #### Timestamp variable
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-comments[, Timestamp := ymd_hms(Timestamp)]
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-sapply(comments, class)$Timestamp
-
-#' 
-#' ## General forum graph
-#' 
-#' The graph will be a graph of users and the links they have between each other within the platform.
-#' Every node is a user, edges are the interactions between users. Every edge has a different weight based on the amount of interactions between users, namely 'how many times users commented each other's posts'.
-#' 
-#' In order to elaborate data with igraph library in the desired manner, further data manipulations are needed. Namely, the nodes-edges of the graph must be derived by matching every post with the comments by exploding the commentors vector (CommentsItemCode) for every post. Then the data elaboration must retrieve the corrisponding commentor username for every comment. The resulting table should have the following form:
-#' 
-#' |User1|User2|Weight|
-#' |---|---|---|
-#' 
-#' Where `User1` and `User2` is the unique couple of users and the `weight` is the counter of interactions that the unique user couple had.
-#' 
-#' ### Explosion of `CommentsItemCode` variable
-#' 
-#' The following command creates a data.table object that has 2 columns containing the post code and the comment code, respectively.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts_graph <- copy(posts)
-posts_graph <- posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
-
-#' 
-#' ### Merging graph table and posts table to obtain again the post author
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts_graph <- merge(posts_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts_graph <- posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
-
-#' 
-#' ### Merging graph table and comments table to obtain the comment author
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts_graph <- merge(posts_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-posts_graph <- posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-final_graph <- posts_graph[, .(PostAuthor, CommentAuthor)]
-
-#' 
-#' ### Graph features
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-g <- graph_from_data_frame(final_graph, directed = F)
-
-#' 
-#' The following function simplifies the graph, meaning that gives the option to eliminate loops and multiple edges.
-#' Loop edges are edges with the same vertex endpoint; multiple edges are edges that have all the same respective endpoints.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-simple_g <- simplify(g, remove.multiple = T, remove.loops = T)
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-plot(degree.distribution(simple_g))
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-edge_density(simple_g)
-
-#' 
-#' ## Temporal analysis
-#' 
-#' The following code chunck divides the posts and the comments table into several tables, based on the timestamp
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
+#' # PART 2. Summary Table
+#' ### Divide in different periods
+## ---------------------------------------------------------------------------------------------------------------------------------
+### Divide in different periods
 p_first_period = posts[Timestamp %between% c("2021-06-01","2021-12-31")]
 p_second_period = posts[Timestamp %between% c("2022-01-01","2022-05-31")]
 p_third_period = posts[Timestamp %between% c("2022-06-01","2022-12-31")]
@@ -431,273 +152,312 @@ c_fourth_period = comments[Timestamp %between% c("2023-01-01","2023-05-31")]
 c_fifth_period = comments[Timestamp %between% c("2023-06-01","2023-12-31")]
 
 #' 
-#' ### First graph (06/2021 - 12/2021)
-#' 
-## ----warning=F----------------------------------------------------------------------------------------------------------------------
-ggplot(data = p_first_period)+
-  geom_area(aes(x = Timestamp, y = Comments))+
-  scale_y_log10()
+#' ## Create the variables
+#' ### Periods
+## ---------------------------------------------------------------------------------------------------------------------------------
+Period = c("First", "Second", "Third", "Fourth", "Fifth")
 
 #' 
-#' The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-p_first_posts_graph <- copy(p_first_period)
-p_first_posts_graph <- p_first_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
-
-p_first_posts_graph <- merge(p_first_posts_graph, p_first_period, by.x = 'ItemCode', by.y = 'ItemCode')
-
-p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
-
-p_first_posts_graph <- merge(p_first_posts_graph, c_first_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
-
-p_first_posts_graph <- p_first_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
-
-final_p_first_posts_graph <- p_first_posts_graph[, .(PostAuthor, CommentAuthor)]
-
-g_first_posts <- simplify(graph_from_data_frame(final_p_first_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
-
-nyms <- ifelse(V(g_first_posts)$name %in% contrib, "contributor", "other")
-
-g_first_posts <- set_vertex_attr(g_first_posts, "type", value = nyms)
+#' ### Unique Poster 
+## ---------------------------------------------------------------------------------------------------------------------------------
+Posters = c(
+    uniqueN(p_first_period$Author),
+    uniqueN(p_second_period$Author),
+    uniqueN(p_third_period$Author),
+    uniqueN(p_fourth_period$Author),
+    uniqueN(p_fifth_period$Author))
 
 #' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-coul  <- brewer.pal(3, "Set1") 
-my_color = coul[as.numeric(as.factor(V(g_first_posts)$type))]
+#' ### Total Sats from posts and from comments
+## ---------------------------------------------------------------------------------------------------------------------------------
+Post_Sats = c(
+  sum(p_first_period$Sats,na.rm = TRUE),
+  sum(p_second_period$Sats,na.rm = TRUE),
+  sum(p_third_period$Sats,na.rm = TRUE),
+  sum(p_fourth_period$Sats,na.rm = TRUE),
+  sum(p_fifth_period$Sats,na.rm = TRUE))
 
-plot(g_first_posts,
-  vertex.label = NA,
-  vertex.color = my_color,
-  layout = layout_nicely,
-  vertex.size=4,
-  edge.width=0.5,
-  edge.color="lightgrey",
-  xlim = c(-0.1, 0.1),
-  ylim = c(-1, 1),
-  )
-
-#' 
-#' ### Second graph (01/2022 - 05/2022)
-#' 
-## ----warning=F----------------------------------------------------------------------------------------------------------------------
-ggplot(data = p_second_period)+
-  geom_area(aes(x = Timestamp, y = Comments))+
-  scale_y_log10()
+Comment_Sats = c(
+  sum(c_first_period$Sats,na.rm = TRUE),
+  sum(c_second_period$Sats,na.rm = TRUE),
+  sum(c_third_period$Sats,na.rm = TRUE),
+  sum(c_fourth_period$Sats,na.rm = TRUE),
+  sum(c_fifth_period$Sats,na.rm = TRUE))
 
 #' 
-#' The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-p_second_posts_graph <- copy(p_second_period)
-p_second_posts_graph <- p_second_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
-
-p_second_posts_graph <- merge(p_second_posts_graph, p_second_period, by.x = 'ItemCode', by.y = 'ItemCode')
-
-p_second_posts_graph <- p_second_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
-
-p_second_posts_graph <- merge(p_second_posts_graph, c_second_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
-
-p_second_posts_graph <- p_second_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
-
-final_p_second_posts_graph <- p_second_posts_graph[, .(PostAuthor, CommentAuthor)]
-
-g_second_posts <- simplify(graph_from_data_frame(final_p_second_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
-
-nyms <- ifelse(V(g_second_posts)$name %in% contrib, "contributor", "other")
-
-g_second_posts <- set_vertex_attr(g_second_posts, "type", value = nyms)
+#' ### Only commentors
+## ---------------------------------------------------------------------------------------------------------------------------------
+f_commentors = anti_join(p_first_period, c_first_period, by = "Author")
+s_commentors = anti_join(p_second_period, c_second_period, by = "Author")
+t_commentors = anti_join(p_third_period, c_third_period, by = "Author")
+f_commentors = anti_join(p_fourth_period, c_fourth_period, by = "Author")
+fi_commentors = anti_join(p_fifth_period, c_fifth_period, by = "Author")
+Only_commentors=c(nrow(f_commentors),nrow(s_commentors),nrow(t_commentors),nrow(f_commentors),nrow(fi_commentors))
 
 #' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-coul  <- brewer.pal(3, "Set1") 
-my_color = coul[as.numeric(as.factor(V(g_second_posts)$type))]
+#' ### N posts and N comments
+## ---------------------------------------------------------------------------------------------------------------------------------
+N_posts=c(nrow(p_first_period),
+  nrow(p_second_period),
+  nrow(p_third_period),
+  nrow(p_fourth_period),
+  nrow(p_fifth_period))
 
-plot(g_second_posts,
-  vertex.label = NA,
-  vertex.color = my_color,
-  layout = layout_nicely,
-  vertex.size=4,
-  edge.width=0.5,
-  edge.color="lightgrey",
-  xlim = c(-0.1, 0.1),
-  ylim = c(-1, 1),
-  )
-
-#' 
-#' ### Third graph (06/2022 - 12/2022)
-#' 
-## ----warning=F----------------------------------------------------------------------------------------------------------------------
-ggplot(data = p_third_period)+
-  geom_area(aes(x = Timestamp, y = Comments))+
-  scale_y_log10()
+N_comments=c(nrow(c_first_period),
+  nrow(c_second_period),
+  nrow(c_third_period),
+  nrow(c_fourth_period),
+  nrow(c_fifth_period))
 
 #' 
-#' The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-p_third_posts_graph <- copy(p_third_period)
-p_third_posts_graph <- p_third_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+#' ### Type of post
+## ---------------------------------------------------------------------------------------------------------------------------------
+# link
+N_link=c(nrow(p_first_period[Category == "link"]),
+         nrow(p_second_period[Category == "link"]),
+         nrow(p_third_period[Category == "link"]),
+         nrow(p_fourth_period[Category == "link"]),
+         nrow(p_fifth_period[Category == "link"]))
 
-p_third_posts_graph <- merge(p_third_posts_graph, p_third_period, by.x = 'ItemCode', by.y = 'ItemCode')
+# discussion
+N_discussion=c(nrow(p_first_period[Category == "discussion"]),
+         nrow(p_second_period[Category == "discussion"]),
+         nrow(p_third_period[Category == "discussion"]),
+         nrow(p_fourth_period[Category == "discussion"]),
+         nrow(p_fifth_period[Category == "discussion"]))
 
-p_third_posts_graph <- p_third_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+# bounty
+N_bounty=c(nrow(p_first_period[Category == "bounty"]),
+         nrow(p_second_period[Category == "bounty"]),
+         nrow(p_third_period[Category == "bounty"]),
+         nrow(p_fourth_period[Category == "bounty"]),
+         nrow(p_fifth_period[Category == "bounty"]))
+# poll
 
-p_third_posts_graph <- merge(p_third_posts_graph, c_third_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
-
-p_third_posts_graph <- p_third_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
-
-final_p_third_posts_graph <- p_third_posts_graph[, .(PostAuthor, CommentAuthor)]
-
-g_third_posts <- simplify(graph_from_data_frame(final_p_third_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
-
-nyms <- ifelse(V(g_third_posts)$name %in% contrib, "contributor", "other")
-
-g_third_posts <- set_vertex_attr(g_third_posts, "type", value = nyms)
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-coul  <- brewer.pal(3, "Set1")
-my_color = coul[as.numeric(as.factor(V(g_third_posts)$type))]
-
-plot(g_third_posts,
-  vertex.label = NA,
-  vertex.color = my_color,
-  layout = layout_components,
-  vertex.size=4,
-  edge.width=0.5,
-  edge.color="lightgrey",
-  xlim = c(-0.1, 0.1),
-  ylim = c(-1, 1),
-  )
+N_poll=c(nrow(p_first_period[Category == "poll"]),
+         nrow(p_second_period[Category == "poll"]),
+         nrow(p_third_period[Category == "poll"]),
+         nrow(p_fourth_period[Category == "poll"]),
+         nrow(p_fifth_period[Category == "poll"]))
+         
 
 #' 
 #' 
-#' ### Fourth graph (01/2023 - 05/2023)
-#' 
-## ----warning=F----------------------------------------------------------------------------------------------------------------------
-ggplot(data = p_fourth_period)+
-  geom_area(aes(x = Timestamp, y = Comments))+
-  scale_y_log10()
+#' ## Creating the Summary Table
+## ---------------------------------------------------------------------------------------------------------------------------------
+summary_table=data.frame(Period,N_posts,N_comments,Posters,Post_Sats,Comment_Sats,Only_commentors,N_link,N_discussion,N_bounty,N_poll)
 
 #' 
-#' The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-p_fourth_posts_graph <- copy(p_fourth_period)
-p_fourth_posts_graph <- p_fourth_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+## ---------------------------------------------------------------------------------------------------------------------------------
+summary_table
 
-p_fourth_posts_graph <- merge(p_fourth_posts_graph, p_fourth_period, by.x = 'ItemCode', by.y = 'ItemCode')
+#' # LINK SUMMARY
+#' ### Check the links
+## ---------------------------------------------------------------------------------------------------------------------------------
+twitter=c(nrow(p_first_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
+          nrow(p_second_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
+          nrow(p_third_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
+          nrow(p_fourth_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
+          nrow(p_fifth_period[grepl("twitter", MainLink, ignore.case = TRUE)]))
 
-p_fourth_posts_graph <- p_fourth_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+youtube=c(nrow(p_first_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
+          nrow(p_second_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
+          nrow(p_third_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
+          nrow(p_fourth_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
+          nrow(p_fifth_period[grepl("youtube", MainLink, ignore.case = TRUE)]))
 
-p_fourth_posts_graph <- merge(p_fourth_posts_graph, c_fourth_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
+linkedin=c(nrow(p_first_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
+          nrow(p_second_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
+          nrow(p_third_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
+          nrow(p_fourth_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
+          nrow(p_fifth_period[grepl("linkedin", MainLink, ignore.case = TRUE)]))
 
-p_fourth_posts_graph <- p_fourth_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+bitcoinmagazine=c(nrow(p_first_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
+          nrow(p_second_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
+          nrow(p_third_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
+          nrow(p_fourth_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
+          nrow(p_fifth_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]))
 
-final_p_fourth_posts_graph <- p_fourth_posts_graph[, .(PostAuthor, CommentAuthor)]
+github=c(nrow(p_first_period[grepl("github", MainLink, ignore.case = TRUE)]),
+          nrow(p_second_period[grepl("github", MainLink, ignore.case = TRUE)]),
+          nrow(p_third_period[grepl("github", MainLink, ignore.case = TRUE)]),
+          nrow(p_fourth_period[grepl("github", MainLink, ignore.case = TRUE)]),
+          nrow(p_fifth_period[grepl("github", MainLink, ignore.case = TRUE)]))
 
-g_fourth_posts <- simplify(graph_from_data_frame(final_p_fourth_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
-
-nyms <- ifelse(V(g_fourth_posts)$name %in% contrib, "contributor", "other")
-
-g_fourth_posts <- set_vertex_attr(g_fourth_posts, "type", value = nyms)
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-coul  <- brewer.pal(3, "Set1")
-my_color = coul[as.numeric(as.factor(V(g_fourth_posts)$type))]
-
-plot(g_fourth_posts,
-  vertex.label = NA,
-  vertex.color = my_color,
-  layout = layout_components,
-  vertex.size=4,
-  edge.width=0.5,
-  edge.color="lightgrey",
-  xlim = c(-0.1, 0.1),
-  ylim = c(-1, 1),
-  )
-
-#' 
-#' 
-#' ### Fifth graph (06/2023 - 10/2023)
-#' 
-## ----warning=F----------------------------------------------------------------------------------------------------------------------
-ggplot(data = p_fifth_period)+
-  geom_area(aes(x = Timestamp, y = Comments))+
-  scale_y_log10()
+yahoo=c(nrow(p_first_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
+          nrow(p_second_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
+          nrow(p_third_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
+          nrow(p_fourth_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
+          nrow(p_fifth_period[grepl("yahoo", MainLink, ignore.case = TRUE)]))
 
 #' 
-#' The following steps are a replica of what has been done with the general graph, but considering only the filtered dataset.
-#' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-p_fifth_posts_graph <- copy(p_fifth_period)
-
-p_fifth_posts_graph[1, CommentsItemCode := NA]
-
-p_fifth_posts_graph <- p_fifth_posts_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
-
-p_fifth_posts_graph <- merge(p_fifth_posts_graph, p_fifth_period, by.x = 'ItemCode', by.y = 'ItemCode')
-
-p_fifth_posts_graph <- p_fifth_posts_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
-
-p_fifth_posts_graph <- merge(p_fifth_posts_graph, c_fifth_period, by.x = 'CommentItemCode', by.y = 'ItemCode')
-
-p_fifth_posts_graph <- p_fifth_posts_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
-
-final_p_fifth_posts_graph <- p_fifth_posts_graph[, .(PostAuthor, CommentAuthor)]
-
-g_fifth_posts <- simplify(graph_from_data_frame(final_p_fifth_posts_graph, directed = F), remove.multiple = T, remove.loops = T)
-
-nyms <- ifelse(V(g_fifth_posts)$name %in% contrib, "contributor", "other")
-
-g_fifth_posts <- set_vertex_attr(g_fifth_posts, "type", value = nyms)
+#' ## Creating the Link Summary Table
+## ---------------------------------------------------------------------------------------------------------------------------------
+link_table=data.frame(Period,N_link, twitter,youtube,linkedin, bitcoinmagazine,github,yahoo)
 
 #' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-coul  <- brewer.pal(3, "Set1")
-my_color = coul[as.numeric(as.factor(V(g_fifth_posts)$type))]
+## ---------------------------------------------------------------------------------------------------------------------------------
+link_table
 
-plot(g_fifth_posts,
-  vertex.label = NA,
-  vertex.color = my_color,
-  layout = layout_components,
-  vertex.size=4,
-  edge.width=0.5,
-  edge.color="lightgrey",
-  xlim = c(-0.1, 0.1),
-  ylim = c(-1, 1),
-  )
+#' #------------------------------------------------------------------------------------------------------------------------
+#' # PART 3. Network Analysis
+#' 
+#' ## First Period
+## ---------------------------------------------------------------------------------------------------------------------------------
+first_graph <- copy(p_first_period)
+first_graph <- first_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+first_graph <- merge(first_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+first_graph <- first_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+first_graph <- merge(first_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+first_graph <- first_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+first_graph <- first_graph[, .(PostAuthor, CommentAuthor)]
+
+#' 
+#' ### Graph 
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g <- graph_from_data_frame(first_graph, directed = F)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g1=igraph::simplify(g, remove.multiple = T, remove.loops = T)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+plot( g1,vertex.label=NA,
+      edge.width = 1,
+      edge.arrow.width = 0.3,
+      edge.arrow.size = 0.5,
+      vertex.label.cex = 1,
+      asp = 0.35,
+      margin = -0.1)
 
 #' 
 #' 
+#' ## Second Period
+## ---------------------------------------------------------------------------------------------------------------------------------
+second_graph <- copy(p_second_period)
+second_graph <- second_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+second_graph <- merge(second_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+second_graph <- second_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+second_graph <- merge(second_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+second_graph <- second_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+second_graph <- second_graph[, .(PostAuthor, CommentAuthor)]
+
 #' 
+#' ### Graph 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g2 <- graph_from_data_frame(second_graph, directed = F)
+
 #' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g2=igraph::simplify(g2, remove.multiple = T, remove.loops = T)
+
 #' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+plot( g2,vertex.label=NA,
+      edge.width = 1,
+      edge.arrow.width = 0.3,
+      edge.arrow.size = 0.5,
+      vertex.label.cex = 1,
+      asp = 0.35,
+      margin = -0.1)
+
 #' 
+#' ## Third Period
+## ---------------------------------------------------------------------------------------------------------------------------------
+third_graph <- copy(p_third_period)
+third_graph <- third_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+third_graph <- merge(third_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+third_graph <- third_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+third_graph <- merge(third_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+third_graph <- third_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+third_graph <- third_graph[, .(PostAuthor, CommentAuthor)]
+
 #' 
+#' ### Graph 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g3 <- graph_from_data_frame(third_graph, directed = F)
+
 #' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g3=igraph::simplify(g3, remove.multiple = T, remove.loops = T)
+
 #' 
-#' # Render markdown as Rscript
+## ---------------------------------------------------------------------------------------------------------------------------------
+plot( g3,vertex.label=NA,
+      edge.width = 1,
+      edge.arrow.width = 0.3,
+      edge.arrow.size = 0.5,
+      vertex.label.cex = 1,
+      asp = 0.35,
+      margin = -0.1)
+
 #' 
-## -----------------------------------------------------------------------------------------------------------------------------------
-knitr::purl(input = 'analysis.Rmd',
-            output = '../scripts/analysis.R',
+#' ### Fourth Period
+## ---------------------------------------------------------------------------------------------------------------------------------
+fourth_graph <- copy(p_fourth_period)
+fourth_graph <- fourth_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+fourth_graph <- merge(fourth_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+fourth_graph <- fourth_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+fourth_graph <- merge(fourth_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+fourth_graph <- fourth_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+fourth_graph <- fourth_graph[, .(PostAuthor, CommentAuthor)]
+
+#' 
+#' ### Graph 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g4 <- graph_from_data_frame(fourth_graph, directed = F)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g4=igraph::simplify(g4, remove.multiple = T, remove.loops = T)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+plot( g4,vertex.label=NA,
+      edge.width = 1,
+      edge.arrow.width = 0.3,
+      edge.arrow.size = 0.5,
+      vertex.label.cex = 1,
+      asp = 0.35,
+      margin = -0.1)
+
+#' 
+#' ### Fifth Period
+## ---------------------------------------------------------------------------------------------------------------------------------
+fifth_graph <- copy(p_fifth_period)
+fifth_graph <- fifth_graph[, .(Commentors = unlist(tstrsplit(CommentsItemCode, ", "))), by = "ItemCode"]
+fifth_graph <- merge(fifth_graph, posts, by.x = 'ItemCode', by.y = 'ItemCode')
+fifth_graph <- fifth_graph[, .(PostItemCode = ItemCode, CommentItemCode = Commentors, PostAuthor = Author)]
+fifth_graph <- merge(fifth_graph, comments, by.x = 'CommentItemCode', by.y = 'ItemCode')
+fifth_graph <- fifth_graph[, .(PostItemCode, CommentItemCode, PostAuthor, CommentAuthor = Author)]
+fifth_graph <- fifth_graph[, .(PostAuthor, CommentAuthor)]
+
+#' 
+#' ### Graph 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g5 <- graph_from_data_frame(fifth_graph, directed = F)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+g5=igraph::simplify(g5, remove.multiple = T, remove.loops = T)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+plot( g5,vertex.label=NA,
+      edge.width = 1,
+      edge.arrow.width = 0.3,
+      edge.arrow.size = 0.5,
+      vertex.label.cex = 1,
+      asp = 0.35,
+      margin = -0.1)
+
+#' 
+## ---------------------------------------------------------------------------------------------------------------------------------
+knitr::purl(input = 'Project.Rmd',
+            output = '../scripts/R/analysis.R',
             documentation = 2
             )
 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
 #' 

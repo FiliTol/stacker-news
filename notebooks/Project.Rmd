@@ -453,3 +453,11 @@ plot( g5,vertex.label=NA,
       asp = 0.35,
       margin = -0.1)
 ```
+
+```{r}
+knitr::purl(input = 'Project.Rmd',
+            output = '../scripts/R/analysis.R',
+            documentation = 2
+            )
+```
+
