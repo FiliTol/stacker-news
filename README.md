@@ -1,67 +1,97 @@
-# Stacker News webscraping
+# Social Network Analysis of stacker.news forum
 
-## Data to collect
+## First period
 
-### User data
+### Graph
 
-In a 'profile' the user data available are:
+![](images/first/first_period_graph.png)
 
-- **username** -> better call it `nym`, in fact user are identified by pseudonyms
-- **stacked amount** -> sats received from the account creation
-- **lnaddress** -> sort of an email address where users can be paid easily. Most of lnaddresses are provided from custodial services.
-- **Stacking since** -> post number of the user's bio. The user bio is considered a post and once someone creates the account it's suggested to post a bio. There could be users without it(?)
-- **Longest cowboy streak** -> If a user tip 100 sats (or more) in a day it gets a cowboy hat
-- **Bio** -> User bio. Usually it is the first user post
-- **Items** -> number of posts+comments the user did
+### Analysis
 
-### Post data
+#### Degree distribution
 
-Stacker news has 5 typologies of posts that we could find + 1 typology which is `comment`. The five typologies are:
-1. Discussion
-2. Link
-3. Poll
-4. Bounty
-5. Job
+The following are the top 10 nodes for degree values (without loops).
 
-- **Post ID** -> it is unique and progressively named starting from 1, which was posted 11/06/2021. **To scrape post data is probably enough to take the URL and loop it from stacker.news/items/1 to stacker.news/items/n** where N is the greater number that you can put there without receiving a 404 response. With this we can then scrape every post page, catching all the posts, users, comments and users that commented, the stacked amounts. Having all the users names we then can scrape trough all the links `https://stacker.news/$username$`. This process can let us catch aso all the users (at least all the users that posted at least once.
+|     | Author     | Degree |
+|-----|------------|--------|
+| 1   | k00b       | 181    |
+| 2   | nout       | 94     |
+| 3   | CypherPoet | 59     |
+| 4   | DarthCoin  | 58     |
+| 5   | dergigi    | 53     |
+| 6   | ugmug      | 51     |
+| 7   | relc       | 50     |
+| 8   | gmd        | 46     |
+| 9   | jimmysong  | 46     |
+| 10  | g4ala      | 40     |
 
-> This flow let us skip the process of finding outh the right dynamics for scraping the content behind the 'more' button, since starting from 0 can easily let us scan through all posts.
+-   Mean degree: 6.61875
+-   Median degree: 2
 
-- **Post title** -> **title is compulsory**
-- **Boost value** -> 'Boosts allow stackers to increase the ranking of their post upon creation to give their content more visibility.' (from the FAQ) NB-> **I'm not scraping it at the moment** 
-- **Bounty item** -> not all the posts have it. A bounty item is a bounty that the post creator pays to the user that solves its problem/challenge/answers better etc. This amount is retrievable by the green button below the post, where we can both find the amount and the value 'paid' or 'not paid'(?).
-- **Post link** -> users can insert a link as a post. This occupies a specific slot in the post template
-- **amount stacked** -> amount stacked by the post (in sats). This section provides us also a string that indicates how many users donated in total (es 'from 11 stackers > 212 sats')
-- **Number of comments**
-- **user that created the post**
-- **time stamp** -> YYYY-mm-dd h:m:s
-- **post tag** -> **Post tag is compulsory**. Stacker.news provides a fixed amount of tags that the creator can put on the post to classify the post on the different sections of the website feed
-- **related posts** -> posts classified as 'related' (I don't know the criteria). This entries sit behind a drop-down menù so maybe more different to catch.
-- **total amount stacked by the comments** -> total sum of sats sacked by the users that commented the post
-- **Comments** -> 'first level comments' have all their dedicated `<div class="comment_comment_k0bin"`. Every comment can have one or more replies that are mapped in the same html chunck but as a 'lower level comment'. **I have to figure out how to catch the hierarchycal relationship between comments**.
-- Every comment in a post can be seen as a post on its own
+![](images/first/degree_distribution.png)
 
+The following moderators were active during this time period:
 
-### Possible issues
+|     | Author       | Degree |
+|-----|--------------|--------|
+| 1   | k00b         | 181    |
+| 2   | kr           | 27     |
+| 3   | benthecarman | 1      |
 
-#### General
-- Since the platform does not track the usernames history of every profile, a user can change its pseudonym whenever he/she wants by simply editing his/her account. Scraping the website at the moment t in time let us access to the history of a specific User considering its pseudonym `@user` at the t moment in time; if later the user changes pseudonym and later we happen to scrape again, we would see a different user pseudonym but the same post cronology, stacked amount etc.
+#### Components
 
-- We can only catch the users that actually commented/posted something, so if a user creates an account without filling the bio but surfes the website we cannot catch it. Even if he/she tips it is not registered (?) nominally but we only have aggregated data.
+The network is divided into 6 components, with a **giant component** composed by 315 nodes and five small components with 1 node each. The components containing only one node are in fact users that posted in the forum without receiving comments. This behaviour can be observed even by looking at the picture about the first period graph, in which some isolated nodes are clearly visible. Some of them ever received a considerable amount of sats for their posts (2 of the 5 are in the 3rd quartile in terms of sats stacked), but their posts didn't trigger any discussion.
 
-- Data about the **visitors** is (maybe) retrievable through the linked page in the footer `analytics > visitors` but its aggregated data.
+Overall the totality of 'Q4' nodes are in the middle of the giant component, meaning that the ones that earned the most are the ones that actually are more engaged in this initial period of the life of the forum.
 
-- Stacked amounts in posts and comments are represented in units, but once they reach the thousands they are formatted as `10.5k sats`, for millions sats they are `10.5m sats`.
+#### Path
 
-- #### Comments structure
+> **NB**: in a weighted graph, distances (and so diameter) are computed using the sum of weights.
 
-![Comments that have replies](images/comment1.png)
-*Comments that have replies*
+-   **Diameter**: the diameter of the graph is 12. On the diameter path there are 6 nodes.
 
-![Comments that do not have replies](images/comment2.png)
-*Comments that do not have replies*
+-   **Mean distance**: 3.481387
 
-### Ideas
+-   **Median distance**: 3
 
-- We could truncate the linked links and see to which websites the liks refer to
-- Do we want to consider 'comments' and 'replies to comments' as the same thing? Where 'comment' is a post that replies to the **starting post**, whereas the 'reply' is the comment to a comment (so a comment to a post that is a comment of the original post) etc. If we decided to treat them as equal, then the scraping of comments is basically a simple command in which we take the `<a class="text-reset position-relative" href="/items/<number>`, that is the same for every comment. This html position contains the ID of the comment in the general history of items. If we decided to **not treat them as equal (which is more correct from a network standpoint) we should plan how to crawl the data in a hierarchy.
+These values are really close to what was observed by the numerous experiments on the **Small World Phenomenon**. The following is the distribution of degrees of separation:
+
+![](images/first/degree_of_separation.png)
+
+#### Clustering and partitioning
+
+The following section observes and compares the application of different clustering algorithms, also called 'community detection algorithms'.
+
+The numerical value that describes the network structure community-wise is the so called **modularity**. Community detection algorithms aim to find the division of a network that maximizes its modularity. The following considerations shall be taken into account:
+
+-   Modularity ranges from -1 to 1
+-   Higher modularity score suggests a better division of the network into communities
+-   Positive values indicate a good community structure
+-   Negative values indicate that the network is not well divided into communities
+
+##### Edge betweenness clustering
+
+-   Clustering isolated 36 groups
+-   Modularity equal to 0.05 indicates a 'neutral' community structure, meaning that the network is barely divided into communities
+
+##### Louvian clustering
+
+-   Clustering isolated 17
+-   Modularity equal to 0.16 indicates a relevant community structure, meaning that the network is divided into communities
+
+##### Walktrap clustering
+
+-   Clustering isolated 169
+-   Modularity equal to 0.083 indicates a 'neutral' community structure, meaning that the network is barely divided into communities
+
+##### Fast Greedy clustering
+
+-   Clustering isolated 19
+-   Modularity equal to 0.15 indicates a relevant community structure, meaning that the network is divided into communities
+
+##### Leading Eigenvector clustering
+
+-   Clustering isolated 39
+-   Modularity equal to 0.12 indicates a relevant community structure, meaning that the network is divided into communities
+
+## Second period

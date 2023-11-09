@@ -114,7 +114,6 @@ rm(author_first_stacked,
    c_first_period,
    p_first_period,
    final_p_first_posts_graph,
-   g_first_posts,
    p_first_posts_graph
    )
 
@@ -200,7 +199,6 @@ rm(author_second_stacked,
    c_second_period,
    p_second_period,
    final_p_second_posts_graph,
-   g_second_posts,
    p_second_posts_graph
 )
 
@@ -286,7 +284,6 @@ rm(author_third_stacked,
    c_third_period,
    p_third_period,
    final_p_third_posts_graph,
-   g_third_posts,
    p_third_posts_graph
 )
 
@@ -371,7 +368,6 @@ rm(author_fourth_stacked,
    c_fourth_period,
    p_fourth_period,
    final_p_fourth_posts_graph,
-   g_fourth_posts,
    p_fourth_posts_graph
 )
 
