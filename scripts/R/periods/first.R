@@ -6,6 +6,11 @@ library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
 
+# Used for community detection
+library(gmp)
+library(slam)
+
+
 #' # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
 posts <- readRDS(file = 'RDS_files/posts')
@@ -85,9 +90,233 @@ plot(g_first_posts,
      vertex.color = my_color,
      layout = layout_with_fr,
      vertex.size=4,
-     edge.width=0.5,
+     edge.width=1,
      edge.color="lightgrey",
      vertex.frame.width = 0
 )
 
 dev.off()
+
+## -----------------------------------------------------------------------------
+## Analysis of graph parameters and stats
+
+### Degree of nodes and degree distribution
+degree_tab <- data.table(author = V(g_first_posts)$name,
+                     degr = degree(
+                       g_first_posts, 
+                       V(g_first_posts)$name,
+                       loops = F
+                       )
+                     ) %>%
+  arrange(desc(degr))
+
+degree_tab %>%
+  head(10)
+
+degree_tab %>%
+  summarise(med = mean(degr))
+
+degree_tab %>%
+  summarise(med = median(degr))
+
+# Plot degree distribution with log(x) scale
+ggplot(data = degree_tab)+
+  geom_density(aes(x = degr))+
+  scale_x_log10()
+
+degree_tab %>%
+  filter(author %in% contrib)
+
+##------------------------------------------------------------------------------
+## Components
+
+component_distribution(g_first_posts)
+
+largest_component(g_first_posts)
+
+count_components(g_first_posts)
+
+components(g_first_posts)$csize
+
+# Visualize only the big component
+plot(decompose(g_first_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size=4,
+     edge.width=1,
+     edge.color="lightgrey",
+     vertex.frame.width = 0
+)
+
+
+## -----------------------------------------------------------------------------
+## Path
+
+## NB: in a weighted graph distances (and so diameter) are computed using the sum
+## of weights. Therefore diameter=12 is the sum of the weights along the edges 
+
+### Diameter
+diameter(g_first_posts, directed = F, unconnected = T)
+
+#### Diameter complete path
+get_diameter(g_first_posts, directed = F, unconnected = T)
+
+#### Diameter vertices and distance
+farthest_vertices(g_first_posts, directed = F, unconnected = T)
+
+mean_distance(g_first_posts, directed = F, unconnected = T)
+
+#View(distances(g_first_posts))
+
+# Takes upper triangle of the matrix (excluding diagonal entries)
+distances_vector <- data.frame(distances = as.vector(distances(g_first_posts))[upper.tri(distances(g_first_posts))])
+
+# Eliminate inf values, that are vertex couples not connected by any path
+distances_vector <- data.frame(distances = distances_vector[is.finite(rowSums(distances_vector)),])
+
+distances_vector %>%
+  summarise(mean = mean(distances), median = median(distances))
+
+###############################
+## Degree of separation plot ##
+###############################
+
+ggplot(data = distances_vector)+
+  geom_bar(aes(x = distances))
+
+
+## -----------------------------------------------------------------------------
+## Clustering and partitioning
+
+betweenness(g_first_posts)
+
+### Community detection algorithms aim to find the division of a network that maximizes its modularity
+### Modularity ranges from -1 to 1:
+### - Higher modularity score suggests a better division of the network into communities
+### - Positive values indicate a good community structure
+### - Negative values indicate that the network is not well divided into communities
+
+#################################
+## Edge betweenness clustering ##
+#################################
+
+CommunityBetweenness <- cluster_edge_betweenness(g_first_posts)
+
+print(CommunityBetweenness)
+
+# Clustering isolated 36 groups
+# Mudularity equal to 0.05 indicates a 'neutral' community structure, meaning
+# that the network is barely divided into communities 
+
+
+########################
+## Louvian clustering ##
+########################
+
+CommunityLouvian <- cluster_louvain(g_first_posts)
+
+print(CommunityLouvian)
+
+# Clustering isolated 17
+# Mudularity equal to 0.16 indicates a relevant community structure, meaning
+# that the network is divided into communities 
+
+
+#########################
+## Walktrap clustering ##
+#########################
+
+CommunityWalktrap <- cluster_walktrap(g_first_posts)
+
+print(CommunityWalktrap)
+
+# Clustering isolated 169
+# Mudularity equal to 0.083 indicates a 'neutral' community structure, meaning
+# that the network is barely divided into communities
+
+
+############################
+## Fast Greedy clustering ##
+############################
+
+CommunityFastGreedy <- cluster_fast_greedy(g_first_posts)
+
+print(CommunityFastGreedy)
+
+# Clustering isolated 19
+# Mudularity equal to 0.15 indicates a relevant community structure, meaning
+# that the network is divided into communities 
+
+
+####################################
+## Leading Eigenvector clustering ##
+####################################
+
+CommunityLeadingEigenvector <- cluster_leading_eigen(g_first_posts)
+
+print(CommunityLeadingEigenvector)
+
+# Clustering isolated 39
+# Mudularity equal to 0.12 indicates a relevant community structure, meaning
+# that the network is divided into communities 
+
+plot_dendrogram(CommunityBetweenness)
+plot_dendrogram(CommunityFastGreedy)
+plot_dendrogram(CommunityLeadingEigenvector)
+plot_dendrogram(CommunityWalktrap)
+
+## -----------------------------------------------------------------------------
+## Comparing community structures
+
+### Using Variation of Information (VI)
+### Measures the information lost and gained when moving from one partition to 
+### another. Lower values indicate better similarity.
+
+compare(CommunityLouvian,
+        CommunityFastGreedy,
+        method = c("vi")
+        )
+
+compare(CommunityLeadingEigenvector,
+        CommunityFastGreedy,
+        method = c("vi")
+)
+
+compare(CommunityLeadingEigenvector,
+        CommunityLouvian,
+        method = c("vi")
+)
+
+### Using Normalized Mutual Information (NMI)
+### Measures the mutual information between two partitions, normalized by the entropy
+### of each partition. It ranges from 0 (no similarity) to 1 (perfect similarity).
+
+compare(CommunityLouvian,
+        CommunityFastGreedy,
+        method = c("nmi")
+)
+
+compare(CommunityLeadingEigenvector,
+        CommunityFastGreedy,
+        method = c("nmi")
+)
+
+compare(CommunityLeadingEigenvector,
+        CommunityLouvian,
+        method = c("nmi")
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
