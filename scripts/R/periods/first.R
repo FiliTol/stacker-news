@@ -73,17 +73,17 @@ V(g_first_posts)$catSats <- cut(author_first_stacked$Sats, breaks = quartiles, l
 
 ### Graph 
 
-coul  <- brewer.pal(3, "Reds") 
+coul  <- brewer.pal(4, "Set1") 
 
 my_color = coul[as.numeric(as.factor(V(g_first_posts)$catSats))]
 
-# Set alpha of vertex based on the stacked amount category
-my_color[V(g_first_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q1"], alpha.f = 0.25)
-my_color[V(g_first_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q2"], alpha.f = 0.50)
-my_color[V(g_first_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q3"], alpha.f = 0.75)
-my_color[V(g_first_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q4"], alpha.f = 1)
+# # Set alpha of vertex based on the stacked amount category
+# my_color[V(g_first_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q1"], alpha.f = 0.25)
+# my_color[V(g_first_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q2"], alpha.f = 0.50)
+# my_color[V(g_first_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q3"], alpha.f = 0.75)
+# my_color[V(g_first_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q4"], alpha.f = 1)
 
-png(filename = 'images/first_period_graph.png')
+png(filename = 'images/first/first_period_graph.png')
 
 plot(g_first_posts,
      vertex.label = NA,
@@ -93,6 +93,14 @@ plot(g_first_posts,
      edge.width=1,
      edge.color="lightgrey",
      vertex.frame.width = 0
+)
+
+legend('topright',
+       legend = unique(V(g_first_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
 )
 
 dev.off()
@@ -114,15 +122,16 @@ degree_tab %>%
   head(10)
 
 degree_tab %>%
-  summarise(med = mean(degr))
+  summarise(mean = mean(degr))
 
 degree_tab %>%
   summarise(med = median(degr))
 
 # Plot degree distribution with log(x) scale
 ggplot(data = degree_tab)+
-  geom_density(aes(x = degr))+
-  scale_x_log10()
+  geom_histogram(aes(x = degr))
+
+ggsave('images/first/degree_distribution.png')
 
 degree_tab %>%
   filter(author %in% contrib)
@@ -149,6 +158,13 @@ plot(decompose(g_first_posts)[[1]],
      vertex.frame.width = 0
 )
 
+legend('topright',
+       legend = unique(V(g_first_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
 
 ## -----------------------------------------------------------------------------
 ## Path
@@ -185,7 +201,7 @@ distances_vector %>%
 ggplot(data = distances_vector)+
   geom_bar(aes(x = distances))
 
-
+ggsave('images/first/degree_of_separation.png')
 ## -----------------------------------------------------------------------------
 ## Clustering and partitioning
 
