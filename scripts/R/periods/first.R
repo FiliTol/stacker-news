@@ -147,14 +147,27 @@ count_components(g_first_posts)
 
 components(g_first_posts)$csize
 
-# Visualize only the big component
+######################################
+## Visualize only the big component ##
+######################################
+
+## First quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_first_posts)$catSats))]
+my_color[V(g_first_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q1"], alpha.f = 1)
+my_color[V(g_first_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q2"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q3"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q4"], alpha.f = 0.1)
+
+png(filename = 'images/first/general_Q1.png')
 plot(decompose(g_first_posts)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_fr,
-     vertex.size=4,
-     edge.width=1,
-     edge.color="lightgrey",
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
      vertex.frame.width = 0
 )
 
@@ -165,6 +178,96 @@ legend('topright',
        bty = "n",
        inset = c(0.02, 0.02)
 )
+dev.off()
+
+## Second quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_first_posts)$catSats))]
+my_color[V(g_first_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q1"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q2"], alpha.f = 1)
+my_color[V(g_first_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q3"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q4"], alpha.f = 0.1)
+
+png(filename = 'images/first/general_Q2.png')
+plot(decompose(g_first_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
+     vertex.frame.width = 0
+)
+
+
+legend('topright',
+       legend = unique(V(g_first_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
+dev.off()
+
+## Third quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_first_posts)$catSats))]
+my_color[V(g_first_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q1"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q2"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q3"], alpha.f = 1)
+my_color[V(g_first_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q4"], alpha.f = 0.1)
+
+png(filename = 'images/first/general_Q3.png')
+plot(decompose(g_first_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
+     vertex.frame.width = 0
+)
+
+legend('topright',
+       legend = unique(V(g_first_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
+dev.off()
+
+## Fourth quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_first_posts)$catSats))]
+my_color[V(g_first_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q1"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q2"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q3"], alpha.f = 0.1)
+my_color[V(g_first_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_first_posts)$catSats=="Q4"], alpha.f = 1)
+
+png(filename = 'images/first/general_Q4.png')
+plot(decompose(g_first_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
+     vertex.frame.width = 0
+)
+
+legend('topright',
+       legend = unique(V(g_first_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
+dev.off()
+
 
 ## -----------------------------------------------------------------------------
 ## Path
@@ -205,7 +308,10 @@ ggsave('images/first/degree_of_separation.png')
 ## -----------------------------------------------------------------------------
 ## Clustering and partitioning
 
-betweenness(g_first_posts)
+betw_nodes <- data.frame(betw = betweenness(g_first_posts))
+
+betw_nodes %>%
+  arrange(desc(betw))
 
 ### Community detection algorithms aim to find the division of a network that maximizes its modularity
 ### Modularity ranges from -1 to 1:
