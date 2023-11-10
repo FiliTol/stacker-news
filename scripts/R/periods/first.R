@@ -313,7 +313,7 @@ betw_nodes <- data.frame(betw = betweenness(g_first_posts))
 betw_nodes %>%
   arrange(desc(betw))
 
-### Community detection algorithms aim to find the division of a network that maximizes its modularity
+# Community detection algorithms aim to find the division of a network that maximizes its modularity
 ### Modularity ranges from -1 to 1:
 ### - Higher modularity score suggests a better division of the network into communities
 ### - Positive values indicate a good community structure
