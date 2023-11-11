@@ -308,10 +308,17 @@ ggsave('images/first/degree_of_separation.png')
 ## -----------------------------------------------------------------------------
 ## Clustering and partitioning
 
+closeness_nodes <- data.frame(closeness = closeness(g_first_posts))
+
+closeness_nodes %>%
+  arrange(desc(closeness)) %>%
+  head()
+
 betw_nodes <- data.frame(betw = betweenness(g_first_posts))
 
 betw_nodes %>%
-  arrange(desc(betw))
+  arrange(desc(betw)) %>%
+  head()
 
 # Community detection algorithms aim to find the division of a network that maximizes its modularity
 ### Modularity ranges from -1 to 1:
