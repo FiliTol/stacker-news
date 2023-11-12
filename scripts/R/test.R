@@ -37,19 +37,13 @@ total_graph <- merge(total_graph, total_items, by.x = 'Item2', by.y = 'ItemCode'
 
 total_graph <- total_graph[, .(Item1 = Item1, Item2 = Item2, Author1 = Author1, Author2 = Author)]
 
-final_graph <- total_graph[, .(Author1, Author2)]
+# Invert order because the directed link between the users is "comment->post"
+final_graph <- total_graph[, .(Author2, Author1)]
 
-### final_graph <- final_graph[, .(weight = .N), by = .(Author1 = pmax(Author1, Author2), Author2 = pmin(Author1, Author2))] 
+# Compute weights based on the direction comment->post, that is Author2, Author1
+final_graph <- final_graph[, .(weight = .N), by = .(Author2, Author1)] 
 
 g <- graph_from_data_frame(final_graph, directed = T)
 
-edge_counts <- count_multiple(g, eids = E(g))
-
-E(g)$weight <- edge_counts
-
-g <- igraph::simplify(g, remove.loops = T)
-
-shortest_paths(g, from = 'k00b', to = 'DarthCoin')
-
-diameter(g)
+plot(g)
 
