@@ -299,7 +299,7 @@ ggsave('images/general_degree_of_separation.png')
 ## -----------------------------------------------------------------------------
 ## Clustering and partitioning
 
-betweenness(g_posts)
+#betweenness(g_posts)
 
 ### Community detection algorithms aim to find the division of a network that maximizes its modularity
 ### Modularity ranges from -1 to 1:
