@@ -334,6 +334,13 @@ comments[, Timestamp := ymd_hms(Timestamp)]
 sapply(comments, class)$Timestamp
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------
+
+comments[, CommentsItemCode := (str_replace_all(CommentsItemCode, '^\\[', "") %>%
+                               str_replace_all(., '\\]$', "")
+                               )
+         ]
+
+
 saveRDS(object = posts, file = 'RDS_files/posts')
 saveRDS(object = comments, file = 'RDS_files/comments')
 saveRDS(object = users, file = 'RDS_files/users')
