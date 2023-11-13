@@ -145,12 +145,26 @@ count_components(g_fifth_posts)
 
 components(g_fifth_posts)$csize
 
-# Visualize only the big component
+
+######################################
+## Visualize only the big component ##
+######################################
+
+## First quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_fifth_posts)$catSats))]
+my_color[V(g_fifth_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q1"], alpha.f = 1)
+my_color[V(g_fifth_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q2"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q3"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q4"], alpha.f = 0.1)
+
+png(filename = 'images/fifth/general_Q1.png')
 plot(decompose(g_fifth_posts)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_fr,
-     vertex.size = 3,
+     vertex.size = 2,
      edge.width = 0.5,
      edge.color = "lightgrey",
      vertex.frame.width = 0
@@ -163,6 +177,95 @@ legend('topright',
        bty = "n",
        inset = c(0.02, 0.02)
 )
+dev.off()
+
+## Second quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_fifth_posts)$catSats))]
+my_color[V(g_fifth_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q1"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q2"], alpha.f = 1)
+my_color[V(g_fifth_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q3"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q4"], alpha.f = 0.1)
+
+png(filename = 'images/fifth/general_Q2.png')
+plot(decompose(g_fifth_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
+     vertex.frame.width = 0
+)
+
+
+legend('topright',
+       legend = unique(V(g_fifth_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
+dev.off()
+
+## Third quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_fifth_posts)$catSats))]
+my_color[V(g_fifth_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q1"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q2"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q3"], alpha.f = 1)
+my_color[V(g_fifth_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q4"], alpha.f = 0.1)
+
+png(filename = 'images/fifth/general_Q3.png')
+plot(decompose(g_fifth_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
+     vertex.frame.width = 0
+)
+
+legend('topright',
+       legend = unique(V(g_fifth_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
+dev.off()
+
+## Fourth quartile
+
+coul  <- brewer.pal(4, "Set1") 
+my_color = coul[as.numeric(as.factor(V(g_fifth_posts)$catSats))]
+my_color[V(g_fifth_posts)$catSats=="Q1"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q1"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q2"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q2"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q3"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q3"], alpha.f = 0.1)
+my_color[V(g_fifth_posts)$catSats=="Q4"] <- adjustcolor(my_color[V(g_fifth_posts)$catSats=="Q4"], alpha.f = 1)
+
+png(filename = 'images/fifth/general_Q4.png')
+plot(decompose(g_fifth_posts)[[1]],
+     vertex.label = NA,
+     vertex.color = my_color,
+     layout = layout_with_fr,
+     vertex.size = 2,
+     edge.width = 0.5,
+     edge.color = "lightgrey",
+     vertex.frame.width = 0
+)
+
+legend('topright',
+       legend = unique(V(g_fifth_posts)$catSats),
+       fill = unique(my_color),
+       title = "Quartiles",
+       bty = "n",
+       inset = c(0.02, 0.02)
+)
+dev.off()
 
 ## -----------------------------------------------------------------------------
 ## Path

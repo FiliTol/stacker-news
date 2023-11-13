@@ -4,7 +4,9 @@
 
 ### Graph
 
-![](images/first/first_period_graph.png)
+|![](images/first/general_Q1.png)|![](images/first/general_Q2.png)|
+|--------------------------------|--------------------------------|
+|![](images/first/general_Q3.png)|![](images/first/general_Q4.png)|
 
 ### Analysis
 
