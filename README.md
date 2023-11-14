@@ -5,7 +5,7 @@
 ### Graphical evolution
 
 |2021-06-01,2021-12-31|![](images/directed/first/general_Q1.png)|![](images/directed/first/general_Q2.png)|![](images/directed/first/general_Q3.png)|![](images/directed/first/general_Q4.png)|
-|---|---|---|---|
+|---|---|---|---|---|
 |2022-01-01,2022-05-31|![](images/directed/second/general_Q1.png)|![](images/directed/second/general_Q2.png)|![](images/directed/second/general_Q3.png)|![](images/directed/second/general_Q4.png)|
 |2022-06-01,2022-12-31|![](images/directed/third/general_Q1.png)|![](images/directed/third/general_Q2.png)|![](images/directed/third/general_Q3.png)|![](images/directed/third/general_Q4.png)|
 |2023-01-01,2023-05-31|![](images/directed/fourth/general_Q1.png)|![](images/directed/fourth/general_Q2.png)|![](images/directed/fourth/general_Q3.png)|![](images/directed/fourth/general_Q4.png)|
