@@ -43,13 +43,39 @@ final_graph <- subset(final_graph, select = c(Author2, Author1, FirstInteraction
 final_graph <- final_graph[!duplicated(final_graph)]
 
 # Remove duplicated couples of users.
-# For every user combination now there is only one edge
+# For every user combination that actually happened now there is only one edge.
 # The edge now indicates the timestamp of the first interaction and the last one
 # between the two users.
 mn <- pmin(final_graph$Author2, final_graph$Author1)
 mx <- pmax(final_graph$Author2, final_graph$Author1)
 int <- as.numeric(interaction(mn, mx))
 final_graph <- final_graph[match(unique(int), int),]
+
+# Add edge id
+ids <- 1:nrow(final_graph)
+
+final_graph <- cbind(final_graph, ids)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
