@@ -133,7 +133,9 @@ degree_tab <- data.table(author = V(g)$name,
                            V(g)$name,
                            loops = F,
                            mode = "total"
-                         )
+                         ),
+                         stacked = V(g)$Sats,
+                         role = V(g)$type
 )
                          
 ## General overview - tot_degr ranking
@@ -169,14 +171,14 @@ degree_tab %>%
 degree_tab %>%
   summarise(mean = mean(out_degr), median = median(out_degr))
 
-# Plot degree distribution with log(x) scale
+# Plot degree distribution of contributors
 ggplot(data = degree_tab)+
   geom_histogram(aes(x = out_degr))
 
 degree_tab %>%
   filter(author %in% contrib) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
-  geom_point()+
+  geom_point(aes(size = stacked))+
   geom_label_repel(aes(label = author),
                    box.padding   = 0.35, 
                    point.padding = 0.5,
@@ -187,6 +189,28 @@ degree_tab %>%
 
 ggsave('images/directed/general/general_contributors_degree.png')
 
+
+##############################################################################
+# Plot degree distribution of all users
+degree_tab %>%
+  mutate(normalized = (stacked - mean(stacked)) / sd(stacked) ) %>%
+  ggplot(aes(x = in_degr, y = out_degr))+
+  geom_point(aes(size = stacked,
+                 alpha = normalized,
+                 color = role))+
+  geom_label_repel(aes(
+    label = ifelse(stacked>1000000, author, '')),
+    force = 1,
+    box.padding   = 5, 
+    point.padding = 0.5,
+    segment.color = 'grey50',
+    max.overlaps = 6000)+
+  labs(x = "In-degree", y = " Out-degree",
+       title = "Forum users in-degree and out-degree",
+       subtitle = "Users with more than 1mln sats stacked")+
+  theme_classic()
+
+ggsave('images/directed/general/ALL_nodes_degree.png')
 
 ##----------------------------------------------------------------------------
 ## Components
