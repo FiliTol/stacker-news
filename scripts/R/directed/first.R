@@ -146,6 +146,7 @@ degree_tab <- data.table(author = V(g)$name,
 ## General overview - tot_degr ranking
 degree_tab %>%
   arrange(desc(tot_degr)) %>%
+  select(author, tot_degr) %>%
   head(10)
 
 degree_tab %>%
