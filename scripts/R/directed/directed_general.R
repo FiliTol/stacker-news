@@ -33,6 +33,15 @@ comments_author_stacked <- comments[, .(Sats = sum(Sats)), by = .(Author)]
 author_stacked <- rbindlist(list(posts_author_stacked, comments_author_stacked))[, lapply(.SD, sum, na.rm = TRUE), by = Author]
 
 
+## Extract the total stacked from each user by looking at the 'users' table
+## Left join between the tables to extract also the rewards + forwarded amounts
+
+author_stacked <- merge(author_stacked, users, by.x = 'Author', by.y = 'User', all.x = T) %>% select(Author, Sats, TotalStacked)
+#author_stacked[, TotalStacked := ifelse(is.na(TotalStacked), Sats, TotalStacked )]
+
+## If an user has a 'reward' amount smaller than 0 it means that he/she is a forwarder, meaning that he/she created posts in which the stacked amount was intentionally forwarded to other users. This is a forum feature that indicates a strong willingness to be a collaborative and active user, but also 
+author_stacked[, rewards := TotalStacked - Sats]
+
 # Let's keep only the variables that are present in both posts and comments
 clean_posts <- subset(posts, select = c(ItemCode, Sats, Author, Timestamp, CommentsItemCode))
 clean_comments <- subset(comments, select = c(ItemCode, Sats, Author, Timestamp, CommentsItemCode))
@@ -69,11 +78,13 @@ g <- set_vertex_attr(g, "type", value = nyms)
 
 # Add stacked amount as attribute
 V(g)$Sats <- author_stacked$Sats[match(V(g)$name, author_stacked$Author)]
+V(g)$TotStacked <- author_stacked$TotalStacked[match(V(g)$name, author_stacked$Author)]
+V(g)$Rewards <- author_stacked$rewards[match(V(g)$name, author_stacked$Author)]
 
 # Add categorical amount by dividing the users according to the quartiles of Sats distribution
-quartiles <- quantile(V(g)$Sats, probs = c(0, 0.25, 0.5, 0.75, 1), na.rm = TRUE)
+quartiles <- quantile(V(g)$TotStacked, probs = c(0, 0.25, 0.5, 0.75, 1), na.rm = TRUE)
 
-V(g)$catSats <- cut(author_stacked$Sats, breaks = quartiles, labels = c("Q1", "Q2", "Q3", "Q4"), include.lowest = TRUE)[match(V(g)$name, author_stacked$Author)]
+V(g)$catSats <- cut(author_stacked$TotalStacked, breaks = quartiles, labels = c("Q1", "Q2", "Q3", "Q4"), include.lowest = TRUE)[match(V(g)$name, author_stacked$Author)]
 
 ## ---------------------------------------------------------------------------
 
@@ -135,6 +146,8 @@ degree_tab <- data.table(author = V(g)$name,
                            mode = "total"
                          ),
                          stacked = V(g)$Sats,
+                         totstacked = V(g)$TotStacked,
+                         rewards = V(g)$Rewards,
                          role = V(g)$type
 )
                          
@@ -193,13 +206,14 @@ ggsave('images/directed/general/general_contributors_degree.png')
 ##############################################################################
 # Plot degree distribution of all users
 degree_tab %>%
-  mutate(normalized = (stacked - mean(stacked)) / sd(stacked) ) %>%
+  filter(totstacked>1000000) %>%
+  #mutate(normalized = (totstacked - mean(totstacked)) / sd(totstacked) ) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
-  geom_point(aes(size = stacked,
-                 alpha = normalized,
+  geom_point(aes(size = totstacked,
+                 #alpha = normalized,
                  color = role))+
   geom_label_repel(aes(
-    label = ifelse(stacked>1000000, author, '')),
+    label = ifelse(totstacked>1000000, author, '')),
     force = 1,
     box.padding   = 5, 
     point.padding = 0.5,
@@ -211,6 +225,16 @@ degree_tab %>%
   theme_classic()
 
 ggsave('images/directed/general/ALL_nodes_degree.png')
+
+## There are some anomalies in this graph. First of all the user 'utxoclub' seems to have +1mln of stacked sats all deriving from a single comment (item 84146). That could ben example of fat fingering and the user is legit because he/she has not been jailed.
+## Indeed utxoclub is an outlier, just as 'tech5'. 'anarkio' seem to have achieved all his/her sats from a single comment (item 12115) that was probably well rewarded by the network. Overall 'anarkio' profile seems legit, with several comments and posts that stacked big amounts of sats.
+
+
+## Rewards accumulation 
+degree_tab %>%
+  ggplot()+
+  geom_boxplot(aes(x = rewards))
+
 
 ##----------------------------------------------------------------------------
 ## Components
