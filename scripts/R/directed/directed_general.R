@@ -191,7 +191,7 @@ ggplot(data = degree_tab)+
 degree_tab %>%
   filter(author %in% contrib) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
-  geom_point(aes(size = stacked))+
+  geom_point(aes(size = totstacked))+
   geom_label_repel(aes(label = author),
                    box.padding   = 0.35, 
                    point.padding = 0.5,
@@ -224,7 +224,26 @@ degree_tab %>%
        subtitle = "Users with more than 1mln sats stacked")+
   theme_classic()
 
-ggsave('images/directed/general/ALL_nodes_degree.png')
+degree_tab %>%
+  filter(totstacked > 500000) %>%
+  mutate(normalized_rewards = (rewards - mean(rewards)) / sd(rewards),
+         col_totstacked = ifelse(totstacked > 1000000, '+1mln', '500k - 1mln')) %>%
+  ggplot(aes(x = in_degr, y = out_degr))+
+  geom_point(aes(size = normalized_rewards,
+                 color = col_totstacked))+
+  geom_label_repel(aes(
+    label = ifelse(totstacked>1000000, author, '')),
+    force = 1,
+    box.padding   = 5, 
+    point.padding = 0.5,
+    segment.color = 'grey50',
+    max.overlaps = 6000)+
+  labs(x = "In-degree", y = " Out-degree",
+       title = "Forum users in-degree and out-degree",
+       subtitle = "Rewards for users with more than 1mln sats stacked")+
+  theme_classic()
+
+ggsave('images/directed/general/rewards_nodes_degree.png')
 
 ## There are some anomalies in this graph. First of all the user 'utxoclub' seems to have +1mln of stacked sats all deriving from a single comment (item 84146). That could ben example of fat fingering and the user is legit because he/she has not been jailed.
 ## Indeed utxoclub is an outlier, just as 'tech5'. 'anarkio' seem to have achieved all his/her sats from a single comment (item 12115) that was probably well rewarded by the network. Overall 'anarkio' profile seems legit, with several comments and posts that stacked big amounts of sats.
@@ -232,8 +251,17 @@ ggsave('images/directed/general/ALL_nodes_degree.png')
 
 ## Rewards accumulation 
 degree_tab %>%
-  ggplot()+
-  geom_boxplot(aes(x = rewards))
+  filter(out_degr>500 | in_degr>500) %>%
+  mutate(normalized_rewards = (rewards - min(rewards)) / (max(rewards) - min(rewards))) %>%
+  ggplot(aes(x = in_degr, y = out_degr))+
+  geom_point(aes(size = normalized_rewards))+
+  geom_label_repel(aes(
+    label = ifelse(out_degr>500 | in_degr>500 , author, '')),
+    force = 1,
+    box.padding   = 5, 
+    point.padding = 0.5,
+    segment.color = 'grey50',
+    max.overlaps = 6000)
 
 
 ##----------------------------------------------------------------------------
