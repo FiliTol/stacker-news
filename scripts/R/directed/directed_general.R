@@ -6,6 +6,7 @@ library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
+library(Rglpk)
 
 # Used for community detection
 library(gmp)
@@ -37,7 +38,7 @@ author_stacked <- rbindlist(list(posts_author_stacked, comments_author_stacked))
 ## Left join between the tables to extract also the rewards + forwarded amounts
 
 author_stacked <- merge(author_stacked, users, by.x = 'Author', by.y = 'User', all.x = T) %>% select(Author, Sats, TotalStacked)
-#author_stacked[, TotalStacked := ifelse(is.na(TotalStacked), Sats, TotalStacked )]
+author_stacked[, TotalStacked := ifelse(is.na(TotalStacked), Sats, TotalStacked )]
 
 ## If an user has a 'reward' amount smaller than 0 it means that he/she is a forwarder, meaning that he/she created posts in which the stacked amount was intentionally forwarded to other users. This is a forum feature that indicates a strong willingness to be a collaborative and active user, but also 
 author_stacked[, rewards := TotalStacked - Sats]
@@ -153,6 +154,7 @@ degree_tab <- data.table(author = V(g)$name,
                          
 ## General overview - tot_degr ranking
 degree_tab %>%
+  select(tot_degr, in_degr, out_degr) %>%
   arrange(desc(tot_degr)) %>%
   head(10)
 
@@ -166,6 +168,7 @@ ggsave('images/directed/general/general_total_degree_distribution.png')
 
 ## General overview - in_degr ranking
 degree_tab %>%
+  select(tot_degr, in_degr, out_degr) %>%
   arrange(desc(in_degr)) %>%
   head(10)
 
@@ -178,6 +181,7 @@ ggplot(data = degree_tab)+
 
 ## General overview - out_degr ranking
 degree_tab %>%
+  select(tot_degr, in_degr, out_degr) %>%
   arrange(desc(out_degr)) %>%
   head(10)
 
@@ -226,7 +230,7 @@ degree_tab %>%
 
 degree_tab %>%
   filter(totstacked > 500000) %>%
-  mutate(normalized_rewards = (rewards - mean(rewards)) / sd(rewards),
+  mutate(normalized_rewards = (rewards - min(rewards)) / (max(rewards) - min(rewards)),
          col_totstacked = ifelse(totstacked > 1000000, '+1mln', '500k - 1mln')) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
   geom_point(aes(size = normalized_rewards,
@@ -240,7 +244,7 @@ degree_tab %>%
     max.overlaps = 6000)+
   labs(x = "In-degree", y = " Out-degree",
        title = "Forum users in-degree and out-degree",
-       subtitle = "Rewards for users with more than 1mln sats stacked")+
+       subtitle = "Rewards for users with more than 500k sats stacked")+
   theme_classic()
 
 ggsave('images/directed/general/rewards_nodes_degree.png')
@@ -251,17 +255,36 @@ ggsave('images/directed/general/rewards_nodes_degree.png')
 
 ## Rewards accumulation 
 degree_tab %>%
-  filter(out_degr>500 | in_degr>500) %>%
+  filter(out_degr > 500 | in_degr > 500) %>%
   mutate(normalized_rewards = (rewards - min(rewards)) / (max(rewards) - min(rewards))) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
-  geom_point(aes(size = normalized_rewards))+
+  geom_point(aes(size = totstacked,
+                 color = normalized_rewards))+
   geom_label_repel(aes(
-    label = ifelse(out_degr>500 | in_degr>500 , author, '')),
+    label = ifelse(out_degr > 500 | in_degr > 500 , author, '')),
     force = 1,
     box.padding   = 5, 
     point.padding = 0.5,
     segment.color = 'grey50',
-    max.overlaps = 6000)
+    max.overlaps = 6000)+
+  theme_classic()
+
+
+### Majority of users
+
+degree_tab %>%
+  filter(totstacked < 1000000) %>%
+  #mutate(normalized = (totstacked - mean(totstacked)) / sd(totstacked) ) %>%
+  ggplot(aes(x = in_degr, y = out_degr))+
+  geom_point(aes(color = role))+
+  geom_smooth(method = 'lm')+
+  labs(x = "In-degree", y = " Out-degree",
+       title = "Forum users in-degree and out-degree",
+       subtitle = "Users with less than 1mln sats stacked")+
+  theme_classic()+
+  scale_y_continuous(breaks = seq(0, 2000, 500), limits = c(0, 2200))+
+  scale_x_continuous(breaks = seq(0, 2000, 500), limits = c(0, 2200))
+  
 
 
 ##----------------------------------------------------------------------------
@@ -283,7 +306,8 @@ components(g)$csize
 ## First quartile
 
 coul  <- brewer.pal(4, "Set1") 
-my_color = coul[as.numeric(as.factor(V(g)$catSats))]
+my_color <- coul[as.numeric(as.factor(V(g)$catSats))]
+
 my_color[V(g)$catSats=="Q1"] <- adjustcolor(my_color[V(g)$catSats=="Q1"], alpha.f = 1)
 my_color[V(g)$catSats=="Q2"] <- adjustcolor(my_color[V(g)$catSats=="Q2"], alpha.f = 0.1)
 my_color[V(g)$catSats=="Q3"] <- adjustcolor(my_color[V(g)$catSats=="Q3"], alpha.f = 0.1)
@@ -437,30 +461,61 @@ ggplot(data = distances_vector)+
 
 ggsave('images/directed/general/general_degree_of_separation.png')
 
+## -----------------------------------------------------------------------------
+## Clustering and partitioning
 
+#betweenness(g_posts)
 
+### Community detection algorithms aim to find the division of a network that maximizes its modularity
+### Modularity ranges from -1 to 1:
+### - Higher modularity score suggests a better division of the network into communities
+### - Positive values indicate a good community structure
+### - Negative values indicate that the network is not well divided into communities
 
+#################################
+## Edge betweenness clustering ##
+#################################
 
+# CommunityBetweenness <- cluster_edge_betweenness(g)
+# print(CommunityBetweenness)
 
+## -----------------------------------------------------------------------------
 
+#########################
+## Walktrap clustering ##
+#########################
 
+CommunityWalktrap <- cluster_walktrap(g)
+print(CommunityWalktrap)
 
+membership(CommunityWalktrap)
 
+plot(g, vertex.color = membership(CommunityWalktrap),
+     vertex.size = 5, vertex.label = NA,
+     main = "Graph with Walktrap Communities")
 
+legend("topright", legend = unique(membership(CommunityWalktrap)),
+       col = rainbow(length(unique(membership(CommunityWalktrap)))),
+       pch = 16, cex = 1.2, title = "Community")
 
+## -----------------------------------------------------------------------------
 
+######################
+## Fluid clustering ##
+######################
 
+CommunityFluid <- cluster_fluid_communities(decompose(g)[[1]],
+                                            no.of.communities = 10)
 
+membership(CommunityFluid)
 
+plot(decompose(g)[[1]], vertex.color = membership(CommunityFluid),
+     vertex.size = 5, vertex.label = NA,
+     main = "Graph with Fluid Communities")
 
-
-
-
-
-
-
-
-
+legend("topright", legend = unique(membership(CommunityFluid)),
+       col = rainbow(length(unique(membership(CommunityFluid)))),
+       pch = 16, cex = 1.2, title = "Community")
 
 
 
