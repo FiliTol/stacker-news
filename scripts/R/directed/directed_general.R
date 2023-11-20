@@ -472,50 +472,50 @@ ggsave('images/directed/general/general_degree_of_separation.png')
 ### - Positive values indicate a good community structure
 ### - Negative values indicate that the network is not well divided into communities
 
-#################################
-## Edge betweenness clustering ##
-#################################
-
+# #################################
+# ## Edge betweenness clustering ##
+# #################################
+# 
 # CommunityBetweenness <- cluster_edge_betweenness(g)
 # print(CommunityBetweenness)
 
 ## -----------------------------------------------------------------------------
 
-#########################
-## Walktrap clustering ##
-#########################
-
-CommunityWalktrap <- cluster_walktrap(g)
-print(CommunityWalktrap)
-
-membership(CommunityWalktrap)
-
-plot(g, vertex.color = membership(CommunityWalktrap),
-     vertex.size = 5, vertex.label = NA,
-     main = "Graph with Walktrap Communities")
-
-legend("topright", legend = unique(membership(CommunityWalktrap)),
-       col = rainbow(length(unique(membership(CommunityWalktrap)))),
-       pch = 16, cex = 1.2, title = "Community")
-
-## -----------------------------------------------------------------------------
-
-######################
-## Fluid clustering ##
-######################
-
-CommunityFluid <- cluster_fluid_communities(decompose(g)[[1]],
-                                            no.of.communities = 10)
-
-membership(CommunityFluid)
-
-plot(decompose(g)[[1]], vertex.color = membership(CommunityFluid),
-     vertex.size = 5, vertex.label = NA,
-     main = "Graph with Fluid Communities")
-
-legend("topright", legend = unique(membership(CommunityFluid)),
-       col = rainbow(length(unique(membership(CommunityFluid)))),
-       pch = 16, cex = 1.2, title = "Community")
+# #########################
+# ## Walktrap clustering ##
+# #########################
+# 
+# CommunityWalktrap <- cluster_walktrap(g)
+# print(CommunityWalktrap)
+# 
+# membership(CommunityWalktrap)
+# 
+# plot(g, vertex.color = membership(CommunityWalktrap),
+#      vertex.size = 5, vertex.label = NA,
+#      main = "Graph with Walktrap Communities")
+# 
+# legend("topright", legend = unique(membership(CommunityWalktrap)),
+#        col = rainbow(length(unique(membership(CommunityWalktrap)))),
+#        pch = 16, cex = 1.2, title = "Community")
+# 
+# ## -----------------------------------------------------------------------------
+# 
+# ######################
+# ## Fluid clustering ##
+# ######################
+# 
+# CommunityFluid <- cluster_fluid_communities(decompose(g)[[1]],
+#                                             no.of.communities = 10)
+# 
+# membership(CommunityFluid)
+# 
+# plot(decompose(g)[[1]], vertex.color = membership(CommunityFluid),
+#      vertex.size = 5, vertex.label = NA,
+#      main = "Graph with Fluid Communities")
+# 
+# legend("topright", legend = unique(membership(CommunityFluid)),
+#        col = rainbow(length(unique(membership(CommunityFluid)))),
+#        pch = 16, cex = 1.2, title = "Community")
 
 
 
