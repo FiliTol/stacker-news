@@ -12,6 +12,8 @@ library(Rglpk)
 library(gmp)
 library(slam)
 
+set.seed(879597)
+
 #' # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
 posts <- readRDS(file = 'RDS_files/posts')
@@ -154,7 +156,7 @@ degree_tab <- data.table(author = V(g)$name,
                          
 ## General overview - tot_degr ranking
 degree_tab %>%
-  select(tot_degr, in_degr, out_degr) %>%
+  select(author, tot_degr, in_degr, out_degr) %>%
   arrange(desc(tot_degr)) %>%
   head(10)
 
@@ -168,7 +170,7 @@ ggsave('images/directed/general/general_total_degree_distribution.png')
 
 ## General overview - in_degr ranking
 degree_tab %>%
-  select(tot_degr, in_degr, out_degr) %>%
+  select(author, tot_degr, in_degr, out_degr) %>%
   arrange(desc(in_degr)) %>%
   head(10)
 
@@ -181,7 +183,7 @@ ggplot(data = degree_tab)+
 
 ## General overview - out_degr ranking
 degree_tab %>%
-  select(tot_degr, in_degr, out_degr) %>%
+  select(author, tot_degr, in_degr, out_degr) %>%
   arrange(desc(out_degr)) %>%
   head(10)
 
@@ -318,7 +320,7 @@ plot(decompose(g)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_lgl,
-     vertex.size = 2,
+     vertex.size = 3,
      edge.width = 0.5,
      edge.color = "lightgrey",
      vertex.frame.width = 0
@@ -461,10 +463,10 @@ ggplot(data = distances_vector)+
 
 ggsave('images/directed/general/general_degree_of_separation.png')
 
+################################################################################
+
 ## -----------------------------------------------------------------------------
 ## Clustering and partitioning
-
-#betweenness(g_posts)
 
 ### Community detection algorithms aim to find the division of a network that maximizes its modularity
 ### Modularity ranges from -1 to 1:
@@ -472,50 +474,48 @@ ggsave('images/directed/general/general_degree_of_separation.png')
 ### - Positive values indicate a good community structure
 ### - Negative values indicate that the network is not well divided into communities
 
-# #################################
-# ## Edge betweenness clustering ##
-# #################################
-# 
-# CommunityBetweenness <- cluster_edge_betweenness(g)
-# print(CommunityBetweenness)
+## Transform graph into undirected to compute the several community detection algorithms
 
-## -----------------------------------------------------------------------------
+undir_g <- as.undirected(g)
 
-# #########################
-# ## Walktrap clustering ##
-# #########################
-# 
-# CommunityWalktrap <- cluster_walktrap(g)
-# print(CommunityWalktrap)
-# 
-# membership(CommunityWalktrap)
-# 
-# plot(g, vertex.color = membership(CommunityWalktrap),
-#      vertex.size = 5, vertex.label = NA,
-#      main = "Graph with Walktrap Communities")
-# 
-# legend("topright", legend = unique(membership(CommunityWalktrap)),
-#        col = rainbow(length(unique(membership(CommunityWalktrap)))),
-#        pch = 16, cex = 1.2, title = "Community")
-# 
-# ## -----------------------------------------------------------------------------
-# 
-# ######################
-# ## Fluid clustering ##
-# ######################
-# 
-# CommunityFluid <- cluster_fluid_communities(decompose(g)[[1]],
-#                                             no.of.communities = 10)
-# 
-# membership(CommunityFluid)
-# 
-# plot(decompose(g)[[1]], vertex.color = membership(CommunityFluid),
-#      vertex.size = 5, vertex.label = NA,
-#      main = "Graph with Fluid Communities")
-# 
-# legend("topright", legend = unique(membership(CommunityFluid)),
-#        col = rainbow(length(unique(membership(CommunityFluid)))),
-#        pch = 16, cex = 1.2, title = "Community")
+## Betweenness
+betweenness__ <- betweenness(g, directed = T)
+
+ggplot()+
+  geom_point(aes(x = betweenness__, y = degree(g,loops = F,mode = 'in'), color = 'red'))
+  
+ggplot()+
+  geom_point(aes(x = betweenness__, y = V(g)$Rewards, color = 'red'))
+
+ggplot()+
+  geom_point(aes(x = betweenness__, y = V(g)$Sats, color = 'red'))
+
+
+## Betweenness clustering
+
+BetweennessCommunity <- cluster_edge_betweenness(g, weights = NULL, directed = TRUE, modularity = TRUE)
+
+## Leiden algorithm
+
+LeidenCommunity <- cluster_leiden(undir_g)
+
+length(LeidenCommunity)
+
+
+## Walktrap algorithm
+
+WalktrapCommunity <- cluster_walktrap(g)
+
+length(WalktrapCommunity)
+
+
+
+
+
+
+
+
+
 
 
 

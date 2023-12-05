@@ -11,6 +11,8 @@ library(ggrepel)
 library(gmp)
 library(slam)
 
+set.seed(879597)
+
 # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
 posts <- readRDS(file = 'RDS_files/posts')
@@ -226,7 +228,7 @@ plot(decompose(g)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_lgl,
-     vertex.size = 2,
+     vertex.size = 4,
      edge.width = 0.5,
      edge.color = "lightgrey",
      vertex.frame.width = 0
@@ -256,7 +258,7 @@ plot(decompose(g)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_lgl,
-     vertex.size = 2,
+     vertex.size = 4,
      edge.width = 0.5,
      edge.color = "lightgrey",
      vertex.frame.width = 0
