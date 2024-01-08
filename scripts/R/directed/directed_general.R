@@ -1,8 +1,10 @@
 library(data.table)
 library(igraph)
 library(ggplot2)
-library(stringr)
+library(dplyr)
+#library(stringr)
 library(lubridate)
+install.packages("tidyverse")
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
@@ -39,10 +41,11 @@ author_stacked <- rbindlist(list(posts_author_stacked, comments_author_stacked))
 ## Extract the total stacked from each user by looking at the 'users' table
 ## Left join between the tables to extract also the rewards + forwarded amounts
 
-author_stacked <- merge(author_stacked, users, by.x = 'Author', by.y = 'User', all.x = T) %>% select(Author, Sats, TotalStacked)
+author_stacked <- merge(author_stacked, users, by.x = 'Author', by.y = 'User', all.x = T) %>%
+  select(Author, Sats, TotalStacked)
 author_stacked[, TotalStacked := ifelse(is.na(TotalStacked), Sats, TotalStacked )]
 
-## If an user has a 'reward' amount smaller than 0 it means that he/she is a forwarder, meaning that he/she created posts in which the stacked amount was intentionally forwarded to other users. This is a forum feature that indicates a strong willingness to be a collaborative and active user, but also 
+## If an user has a 'reward' amount smaller than 0 it means that he/she is a forwarder, meaning that he/she created posts in which the stacked amount was intentionally forwarded to other users. This is a forum feature that indicates a strong willingness to be a collaborative and active user.
 author_stacked[, rewards := TotalStacked - Sats]
 
 # Let's keep only the variables that are present in both posts and comments
@@ -491,22 +494,22 @@ ggplot()+
   geom_point(aes(x = betweenness__, y = V(g)$Sats, color = 'red'))
 
 
-## Betweenness clustering
-
-BetweennessCommunity <- cluster_edge_betweenness(g, weights = NULL, directed = TRUE, modularity = TRUE)
-
-## Leiden algorithm
-
-LeidenCommunity <- cluster_leiden(undir_g)
-
-length(LeidenCommunity)
-
-
-## Walktrap algorithm
-
-WalktrapCommunity <- cluster_walktrap(g)
-
-length(WalktrapCommunity)
+# ## Betweenness clustering
+# 
+# BetweennessCommunity <- cluster_edge_betweenness(g, weights = NULL, directed = TRUE, modularity = TRUE)
+# 
+# ## Leiden algorithm
+# 
+# LeidenCommunity <- cluster_leiden(undir_g)
+# 
+# length(LeidenCommunity)
+# 
+# 
+# ## Walktrap algorithm
+# 
+# WalktrapCommunity <- cluster_walktrap(g)
+# 
+# length(WalktrapCommunity)
 
 
 
