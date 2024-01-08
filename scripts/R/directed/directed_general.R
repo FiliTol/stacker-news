@@ -131,6 +131,8 @@ dev.off()
 ## -----------------------------------------------------------------------------
 ## Analysis of graph parameters and stats
 
+### Creation of a table that contains all the attribute values for every vertex
+### (node) in the general graph.
 ### In-degree, out-degree and total degree of nodes and degree distribution
 degree_tab <- data.table(author = V(g)$name,
                          in_degr = degree(
@@ -166,8 +168,13 @@ degree_tab %>%
 degree_tab %>%
   summarise(mean = mean(tot_degr), median = median(tot_degr))
 
-ggplot(data = degree_tab)+
-  geom_histogram(aes(x = tot_degr))
+ggplot(data = degree_tab, aes(x = tot_degr)) +
+  stat_density(aes(y = after_stat(..density..)), geom = "point", color = "blue", size = 3, alpha = 1)+
+  scale_y_sqrt() +
+  labs(x = "Total degree", y = "density",
+       title = "Degree distribution",
+       subtitle = "sqrt scaled values")+
+  theme_classic()
 
 ggsave('images/directed/general/general_total_degree_distribution.png')
 
@@ -234,9 +241,9 @@ degree_tab %>%
   theme_classic()
 
 degree_tab %>%
-  filter(totstacked > 500000) %>%
+  filter(totstacked > 200000) %>%
   mutate(normalized_rewards = (rewards - min(rewards)) / (max(rewards) - min(rewards)),
-         col_totstacked = ifelse(totstacked > 1000000, '+1mln', '500k - 1mln')) %>%
+         col_totstacked = ifelse(totstacked > 1000000, '+1mln', '200k - 1mln')) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
   geom_point(aes(size = normalized_rewards,
                  color = col_totstacked))+
@@ -249,7 +256,7 @@ degree_tab %>%
     max.overlaps = 6000)+
   labs(x = "In-degree", y = " Out-degree",
        title = "Forum users in-degree and out-degree",
-       subtitle = "Rewards for users with more than 500k sats stacked")+
+       subtitle = "Rewards for users with more than 200k sats stacked")+
   theme_classic()
 
 ggsave('images/directed/general/rewards_nodes_degree.png')
