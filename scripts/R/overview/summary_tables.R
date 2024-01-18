@@ -1,9 +1,10 @@
 library(data.table)
 library(igraph)
 library(ggplot2)
-library(stringr)
+#library(stringr)
 library(lubridate)
 library(tidyverse)
+library(dplyr)
 
 #' # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
@@ -74,12 +75,12 @@ Comment_Sats = c(
 #' 
 #' ### Only commentors
 ## ---------------------------------------------------------------------------------------------------------------------------------
-f_commentors = anti_join(p_first_period, c_first_period, by = "Author")
-s_commentors = anti_join(p_second_period, c_second_period, by = "Author")
-t_commentors = anti_join(p_third_period, c_third_period, by = "Author")
-f_commentors = anti_join(p_fourth_period, c_fourth_period, by = "Author")
-fi_commentors = anti_join(p_fifth_period, c_fifth_period, by = "Author")
-Only_commentors=c(nrow(f_commentors),nrow(s_commentors),nrow(t_commentors),nrow(f_commentors),nrow(fi_commentors))
+first_commentors = anti_join(p_first_period, c_first_period, by = "Author")
+second_commentors = anti_join(p_second_period, c_second_period, by = "Author")
+third_commentors = anti_join(p_third_period, c_third_period, by = "Author")
+fourth_commentors = anti_join(p_fourth_period, c_fourth_period, by = "Author")
+fifth_commentors = anti_join(p_fifth_period, c_fifth_period, by = "Author")
+Only_commentors=c(nrow(first_commentors),nrow(second_commentors),nrow(third_commentors),nrow(fourth_commentors),nrow(fifth_commentors))
 
 #' 
 #' ### N posts and N comments
@@ -185,3 +186,11 @@ link_table=data.frame(Period,N_link, twitter,youtube,linkedin, bitcoinmagazine,g
 #' 
 ## ---------------------------------------------------------------------------------------------------------------------------------
 link_table
+
+
+
+
+
+
+
+remove(list=ls())

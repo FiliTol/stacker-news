@@ -17,3 +17,6 @@ scripts/R/analysis.R
 scripts/R/periods
 renv.lock
 old_README
+scripts/R/overview/general_graph.R
+scripts/R/overview/graphs_timeline.R
+scripts/R/overview/analysis.R
