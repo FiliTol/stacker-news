@@ -13,7 +13,7 @@ users <- readRDS(file = 'RDS_files/users')
 
 #' # PART 2. Summary Table
 #' ### Divide in different periods
-## ---------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ### Divide in different periods
 p_first_period = posts[Timestamp %between% c("2021-06-01","2021-12-31")]
 p_second_period = posts[Timestamp %between% c("2022-01-01","2022-05-31")]
@@ -42,12 +42,12 @@ saveRDS(object = c_fifth_period, file = 'RDS_files/c_fifth_period')
 #' 
 #' ## Create the variables
 #' ### Periods
-## ---------------------------------------------------------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
 Period = c("First", "Second", "Third", "Fourth", "Fifth")
 
 #' 
 #' ### Unique Poster 
-## ---------------------------------------------------------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
 Posters = c(
   uniqueN(p_first_period$Author),
   uniqueN(p_second_period$Author),
@@ -57,7 +57,7 @@ Posters = c(
 
 #' 
 #' ### Total Sats from posts and from comments
-## ---------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 Post_Sats = c(
   sum(p_first_period$Sats,na.rm = TRUE),
   sum(p_second_period$Sats,na.rm = TRUE),
@@ -74,24 +74,30 @@ Comment_Sats = c(
 
 #' 
 #' ### Only commentors
-## ---------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 first_commentors = anti_join(p_first_period, c_first_period, by = "Author")
 second_commentors = anti_join(p_second_period, c_second_period, by = "Author")
 third_commentors = anti_join(p_third_period, c_third_period, by = "Author")
 fourth_commentors = anti_join(p_fourth_period, c_fourth_period, by = "Author")
 fifth_commentors = anti_join(p_fifth_period, c_fifth_period, by = "Author")
-Only_commentors=c(nrow(first_commentors),nrow(second_commentors),nrow(third_commentors),nrow(fourth_commentors),nrow(fifth_commentors))
+
+Only_commentors = c(nrow(first_commentors),
+                    nrow(second_commentors),
+                    nrow(third_commentors),
+                    nrow(fourth_commentors),
+                    nrow(fifth_commentors)
+                    )
 
 #' 
 #' ### N posts and N comments
-## ---------------------------------------------------------------------------------------------------------------------------------
-N_posts=c(nrow(p_first_period),
+## -----------------------------------------------------------------------------
+N_posts = c(nrow(p_first_period),
           nrow(p_second_period),
           nrow(p_third_period),
           nrow(p_fourth_period),
           nrow(p_fifth_period))
 
-N_comments=c(nrow(c_first_period),
+N_comments = c(nrow(c_first_period),
              nrow(c_second_period),
              nrow(c_third_period),
              nrow(c_fourth_period),
@@ -99,30 +105,30 @@ N_comments=c(nrow(c_first_period),
 
 #' 
 #' ### Type of post
-## ---------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # link
-N_link=c(nrow(p_first_period[Category == "link"]),
+N_link = c(nrow(p_first_period[Category == "link"]),
          nrow(p_second_period[Category == "link"]),
          nrow(p_third_period[Category == "link"]),
          nrow(p_fourth_period[Category == "link"]),
          nrow(p_fifth_period[Category == "link"]))
 
 # discussion
-N_discussion=c(nrow(p_first_period[Category == "discussion"]),
+N_discussion = c(nrow(p_first_period[Category == "discussion"]),
                nrow(p_second_period[Category == "discussion"]),
                nrow(p_third_period[Category == "discussion"]),
                nrow(p_fourth_period[Category == "discussion"]),
                nrow(p_fifth_period[Category == "discussion"]))
 
 # bounty
-N_bounty=c(nrow(p_first_period[Category == "bounty"]),
+N_bounty = c(nrow(p_first_period[Category == "bounty"]),
            nrow(p_second_period[Category == "bounty"]),
            nrow(p_third_period[Category == "bounty"]),
            nrow(p_fourth_period[Category == "bounty"]),
            nrow(p_fifth_period[Category == "bounty"]))
 # poll
 
-N_poll=c(nrow(p_first_period[Category == "poll"]),
+N_poll = c(nrow(p_first_period[Category == "poll"]),
          nrow(p_second_period[Category == "poll"]),
          nrow(p_third_period[Category == "poll"]),
          nrow(p_fourth_period[Category == "poll"]),
@@ -132,47 +138,58 @@ N_poll=c(nrow(p_first_period[Category == "poll"]),
 #' 
 #' 
 #' ## Creating the Summary Table
-## ---------------------------------------------------------------------------------------------------------------------------------
-summary_table=data.frame(Period,N_posts,N_comments,Posters,Post_Sats,Comment_Sats,Only_commentors,N_link,N_discussion,N_bounty,N_poll)
+## -----------------------------------------------------------------------------
+summary_table = data.frame(Period,
+                           N_posts,
+                           N_comments,
+                           Posters,
+                           Post_Sats,
+                           Comment_Sats,
+                           Only_commentors,
+                           N_link,
+                           N_discussion,
+                           N_bounty,
+                           N_poll
+                           )
 
 #' 
-## ---------------------------------------------------------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
 summary_table
 
 #' # LINK SUMMARY
 #' ### Check the links
 ## ---------------------------------------------------------------------------------------------------------------------------------
-twitter=c(nrow(p_first_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
+twitter = c(nrow(p_first_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
           nrow(p_second_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
           nrow(p_third_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
           nrow(p_fourth_period[grepl("twitter", MainLink, ignore.case = TRUE)]),
           nrow(p_fifth_period[grepl("twitter", MainLink, ignore.case = TRUE)]))
 
-youtube=c(nrow(p_first_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
+youtube = c(nrow(p_first_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
           nrow(p_second_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
           nrow(p_third_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
           nrow(p_fourth_period[grepl("youtube", MainLink, ignore.case = TRUE)]),
           nrow(p_fifth_period[grepl("youtube", MainLink, ignore.case = TRUE)]))
 
-linkedin=c(nrow(p_first_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
+linkedin = c(nrow(p_first_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
            nrow(p_second_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
            nrow(p_third_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
            nrow(p_fourth_period[grepl("linkedin", MainLink, ignore.case = TRUE)]),
            nrow(p_fifth_period[grepl("linkedin", MainLink, ignore.case = TRUE)]))
 
-bitcoinmagazine=c(nrow(p_first_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
+bitcoinmagazine = c(nrow(p_first_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
                   nrow(p_second_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
                   nrow(p_third_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
                   nrow(p_fourth_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]),
                   nrow(p_fifth_period[grepl("bitcoinmagazine", MainLink, ignore.case = TRUE)]))
 
-github=c(nrow(p_first_period[grepl("github", MainLink, ignore.case = TRUE)]),
+github = c(nrow(p_first_period[grepl("github", MainLink, ignore.case = TRUE)]),
          nrow(p_second_period[grepl("github", MainLink, ignore.case = TRUE)]),
          nrow(p_third_period[grepl("github", MainLink, ignore.case = TRUE)]),
          nrow(p_fourth_period[grepl("github", MainLink, ignore.case = TRUE)]),
          nrow(p_fifth_period[grepl("github", MainLink, ignore.case = TRUE)]))
 
-yahoo=c(nrow(p_first_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
+yahoo = c(nrow(p_first_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
         nrow(p_second_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
         nrow(p_third_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
         nrow(p_fourth_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
@@ -181,15 +198,40 @@ yahoo=c(nrow(p_first_period[grepl("yahoo", MainLink, ignore.case = TRUE)]),
 #' 
 #' ## Creating the Link Summary Table
 ## ---------------------------------------------------------------------------------------------------------------------------------
-link_table=data.frame(Period,N_link, twitter,youtube,linkedin, bitcoinmagazine,github,yahoo)
+link_table = data.frame(Period,
+                        N_link,
+                        twitter,
+                        youtube,
+                        linkedin,
+                        bitcoinmagazine,
+                        github,
+                        yahoo
+                        )
 
 #' 
 ## ---------------------------------------------------------------------------------------------------------------------------------
 link_table
 
+################################################################################ 
+### Overview to use for paper
+################################################################################ 
+
+## Users
 
 
 
+
+## Posts
+
+
+
+
+## Comments
+
+
+
+
+## Links
 
 
 
