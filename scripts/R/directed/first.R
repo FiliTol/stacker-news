@@ -1,15 +1,18 @@
 library(data.table)
 library(igraph)
 library(ggplot2)
-library(stringr)
+#library(stringr)
 library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
+library(dplyr)
 
 # Used for community detection
 library(gmp)
 library(slam)
+
+set.seed(879597)
 
 # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
@@ -146,6 +149,7 @@ degree_tab <- data.table(author = V(g)$name,
 ## General overview - tot_degr ranking
 degree_tab %>%
   arrange(desc(tot_degr)) %>%
+  select(author, tot_degr) %>%
   head(10)
 
 degree_tab %>%
@@ -225,7 +229,7 @@ plot(decompose(g)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_lgl,
-     vertex.size = 2,
+     vertex.size = 4,
      edge.width = 0.5,
      edge.color = "lightgrey",
      vertex.frame.width = 0
@@ -255,7 +259,7 @@ plot(decompose(g)[[1]],
      vertex.label = NA,
      vertex.color = my_color,
      layout = layout_with_lgl,
-     vertex.size = 2,
+     vertex.size = 4,
      edge.width = 0.5,
      edge.color = "lightgrey",
      vertex.frame.width = 0
