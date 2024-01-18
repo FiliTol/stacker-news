@@ -14,3 +14,4 @@ qodana.yaml
 stacker_news.sqlite
 outputs/
 scripts/R/analysis.R
+scripts/R/periods
