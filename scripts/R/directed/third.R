@@ -1,7 +1,7 @@
 library(data.table)
 library(igraph)
 library(ggplot2)
-library(stringr)
+#library(stringr)
 library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
@@ -345,6 +345,7 @@ get_diameter(g, directed = T, unconnected = T)
 
 #### Diameter vertices and distance
 farthest_vertices(g, directed = T, unconnected = T)
+
 
 mean_distance(g, directed = T, unconnected = T)
 
