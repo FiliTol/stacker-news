@@ -2,9 +2,9 @@ library(data.table)
 library(igraph)
 library(ggplot2)
 library(dplyr)
-#library(stringr)
+library(stringr)
 library(lubridate)
-install.packages("tidyverse")
+#install.packages("tidyverse")
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
@@ -170,14 +170,24 @@ degree_tab %>%
   summarise(mean = mean(tot_degr), median = median(tot_degr))
 
 ggplot(data = degree_tab, aes(x = tot_degr)) +
-  stat_density(aes(y = after_stat(..density..)), geom = "point", color = "blue", size = 3, alpha = 1)+
+  geom_histogram(binwidth = 1, fill = "blue", alpha = 0.7) +
   scale_y_sqrt() +
-  labs(x = "Total degree", y = "density",
-       title = "Degree distribution",
-       subtitle = "sqrt scaled values")+
-  theme_classic()
+  labs(x = "Total degree", y = "Density",
+       title = "Degree Distribution",
+       subtitle = "sqrt scaled values") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
 
-ggsave('images/directed/general/general_total_degree_distribution.png')
+#ggplot(data = degree_tab, aes(x = tot_degr)) +
+#  stat_density(aes(y = after_stat(..density..)), geom = "point", color = "blue", size = 3, alpha = 1)+
+#  scale_y_sqrt() +
+#  labs(x = "Total degree", y = "density",
+#       title = "Degree distribution",
+#       subtitle = "sqrt scaled values")+
+#  theme_classic()+
+#  theme(text = element_text(size = 14))
+
+ggsave('images/directed/general/general_total_degree_distribution.png', width = 6, height = 4)
 
 ## General overview - in_degr ranking
 degree_tab %>%
@@ -365,13 +375,13 @@ degree_tab %>%
          col_totstacked = ifelse(totstacked > 100000, '+100k', '10k - 100k')) %>%
   ggplot(aes(x = in_degr, y = out_degr))+
   geom_point(aes(color = col_totstacked), size = 0.5)+
-  geom_hline(yintercept = 10, color = 'red')+
-  geom_vline(xintercept = 10, color = 'red')+
+ # geom_hline(yintercept = 10, color = 'red')+
+ # geom_vline(xintercept = 10, color = 'red')+
   geom_label_repel(aes(
     label = ifelse(totstacked>1000000, author, '')),
     force = 5,
     box.padding = 1, 
-    point.padding = 0.5,
+    point.padding = 5,
     segment.color = 'grey50',
     max.overlaps = 6000)+
   labs(x = "In-degree", y = " Out-degree",
@@ -379,9 +389,11 @@ degree_tab %>%
        subtitle = "Rewards for users with more than 10k sats stacked")+
   theme_classic() +
   scale_y_log10() +
-  scale_x_log10()
+  scale_x_log10()+
+  theme(text = element_text(size = 14))+
+  guides(color = guide_legend(title = "Total Stacked"))
 
-ggsave('images/directed/general/stacked_degree_onepercent.png')
+ggsave('images/directed/general/stacked_degree_onepercent.png', width = 6, height = 5)
 
 
 
@@ -497,10 +509,12 @@ items_degr_tab %>%
   scale_y_log10() +
   labs(x = "% productive posts (1 - links)", y = "Total degree",
        title = "Percentage of productive posts vs total degree",
-       subtitle = "Darker observations have an higher earnings-per-post ratio")+
-  theme_classic()
+       subtitle = "Darker observations have an higher ept ratio")+
+  theme_classic()+
+  theme(text = element_text(size = 14)) +
+  guides(alpha= guide_legend(title = "etp ratio")) 
 
-ggsave('images/directed/general/post_to_earning_graph.png')
+ggsave('images/directed/general/post_to_earning_graph.png', width = 6, height = 5)
 
 
 items_degr_tab %>%

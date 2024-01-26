@@ -5,6 +5,9 @@ library(ggplot2)
 library(lubridate)
 library(tidyverse)
 library(dplyr)
+library(forcats)
+library(gridExtra)
+library(cowplot)
 
 #' # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
@@ -216,17 +219,56 @@ link_table
 ### Overview to use for paper
 ################################################################################ 
 
-## Users
-
-
-
-
 ## Posts
 
+sats <- posts %>%
+  group_by(Category) %>%
+  summarise(Sats = sum(Sats, na.rm = T)) %>%
+  ggplot()+
+  geom_col(aes(x = reorder(Category, -Sats), y = Sats, fill = Category)) +
+  labs(x = "", y = "Sats")+
+  theme_classic()+
+  guides(fill = FALSE)+
+  theme(text = element_text(size = 14))
+
+avg_sats <- posts %>%
+  group_by(Category) %>%
+  summarise(avg_sats = mean(Sats, na.rm = T)) %>%
+  ggplot()+
+  geom_col(aes(x = reorder(Category, -avg_sats), y = avg_sats, fill = Category))+
+  labs(x = "", y = "Avg sats")+
+  theme_classic()+
+  guides(fill = FALSE)+
+  theme(text = element_text(size = 14))
+
+
+boost <- posts %>%
+  group_by(Category) %>%
+  summarise(boost= sum(Boost, na.rm = T)) %>%
+  ggplot()+
+  geom_col(aes(x = reorder(Category, -boost), y = boost, fill = Category)) +
+  labs(x = "", y = "Boost")+
+  theme_classic()+
+  guides(fill = FALSE)+
+  theme(text = element_text(size = 14))
+
+n_posts <- posts %>%
+  group_by(Category) %>%
+  summarise(n_entries =n()) %>%
+  ggplot()+
+  geom_col(aes(x = reorder(Category, -n_entries), y = n_entries, fill = Category))+
+  labs(x = "", y = "N° posts")+
+  theme_classic()+
+  guides(fill = FALSE)+
+  theme(text = element_text(size = 14))
+
+plot_grid(sats, avg_sats, boost, n_posts, labels=c("", "", "", ""), ncol = 2, nrow = 2)
+
+ggsave("images/post_types.png", width=7, height=4)
 
 
 
-## Comments
+## Comments 
 
 
 
@@ -235,4 +277,4 @@ link_table
 
 
 
-remove(list=ls())
+#remove(list=ls())
