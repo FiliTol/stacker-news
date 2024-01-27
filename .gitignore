@@ -5,9 +5,9 @@
 user_modules/
 trash/
 .idea
-stacker-news.Rproj
+#stacker-news.Rproj
 .Rprofile
-renv/
+#renv/
 scripts/__pycache__/
 tests/
 qodana.yaml
@@ -15,7 +15,7 @@ stacker_news.sqlite
 outputs/
 scripts/R/analysis.R
 scripts/R/periods
-renv.lock
+#renv.lock
 old_README
 scripts/R/overview/general_graph.R
 scripts/R/overview/graphs_timeline.R
