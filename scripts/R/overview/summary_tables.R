@@ -7,6 +7,7 @@ library(tidyverse)
 library(dplyr)
 library(forcats)
 library(gridExtra)
+library(kableExtra)
 library(cowplot)
 
 #' # Load RDS files
@@ -215,8 +216,117 @@ link_table = data.frame(Period,
 ## ---------------------------------------------------------------------------------------------------------------------------------
 link_table
 
-################################################################################ 
-### Overview to use for paper
+## Number of users
+nrow(users)
+
+## Rankings Poster
+### Sum
+posts[is.na(posts)] <- 0 
+ranking_poster = posts %>% 
+  group_by(Author)%>%
+  summarise(SatsReceived = sum(Sats),
+            N_posts = n(),
+            boost = sum(Boost),
+            Sats_per_post = round(mean(SatsReceived/N_posts)),
+            First_post = first(Timestamp))%>%
+  arrange(desc(SatsReceived))
+
+ranking_poster = ranking_poster[0:10,]
+
+ranking_poster%>%
+  kbl() %>%
+  kable_classic_2(full_width = F)
+
+### Avg
+posts[is.na(posts)] <- 0 
+ranking_poster = posts %>%
+  group_by(Author)%>%
+  summarise(SatsReceived = mean(Sats),
+            N_posts = n(),
+            boost = sum(Boost),
+            Sats_per_post = round(mean(SatsReceived/N_posts)),
+            First_post = first(Timestamp))%>%
+  arrange(desc(SatsReceived))
+
+ranking_poster2 = ranking_poster[0:10,]
+
+ranking_poster2 %>%
+  kbl() %>%
+  kable_classic_2(full_width = F)
+
+## Ranking commentors
+ranking_commentors = comments %>% 
+  group_by(Author)%>% 
+  summarise(SatsReceived = sum(Sats),
+            N_comments = n(),
+            Sats_per_comment = mean(SatsReceived/N_comments))%>%
+  arrange(desc(SatsReceived))
+
+ranking_commentors2 = ranking_commentors[1:10,]
+ranking_commentors2 %>%
+  kbl() %>%
+  kable_classic_2(full_width = F)
+
+## Ranking post type
+ranking_types = posts %>% 
+  group_by(Category)%>% 
+  summarise(Sum_SatsReceived = sum(Sats),
+            Avg_SatsReceived = mean(Sats),
+            boost = sum(Boost),
+            N_posts = n())%>%
+  arrange(desc(Sum_SatsReceived))
+
+ranking_types %>%
+  kbl() %>%
+  kable_classic_2(full_width = F)
+
+
+#------------------------------------------------------------------------------------------
+## Removing outliers
+ranking_poster = ranking_poster %>%
+  filter(N_posts > 10)
+ranking_commentors = ranking_commentors %>%
+  filter(N_comments>10)
+
+## Post Graph
+ranking_poster$F_N_posts <- cut(ranking_poster$N_posts, breaks = 100, labels = FALSE)
+ranking_poster$F_N_posts = as.factor(ranking_poster$F_N_posts)
+
+post_graph = ranking_poster %>% 
+  group_by(F_N_posts)%>%
+  summarise(mean_sats = mean(SatsReceived))%>%
+  arrange(desc(F_N_posts))
+
+ggplot(post_graph)+
+  geom_point(aes(F_N_posts,mean_sats))+
+  labs(x = "Factors representing N. Posts",y = "Mean of Sats received")+
+  ggtitle("N. Posts vs Sats Received")+
+  ylim(0,2000)+
+  theme_classic()+
+  theme(text = element_text(size = 14))
+  
+ggsave("images/Post vs Sats.png", width=7, height=4)
+
+
+## Comment Graph
+ranking_commentors$F_N_comments <- cut(ranking_commentors$N_comments, breaks = 100, labels = FALSE)
+ranking_commentors$F_N_comments = as.factor(ranking_commentors$F_N_comments)
+
+comment_graph = ranking_commentors %>% 
+  group_by(F_N_comments)%>%
+  summarise(mean_sats = mean(SatsReceived))%>%
+  arrange(desc(F_N_comments))
+
+ggplot(comment_graph)+
+  geom_point(aes(F_N_comments, mean_sats))+
+  labs(x = "Factors representing N. Comments",y = "Mean of Sats received")+
+  ggtitle("N. Comments vs Sats Received")+
+  theme_classic()+
+  theme(text = element_text(size = 14))
+
+ggsave("images/Comment vs Sats.png", width=7, height=4)
+
+
 ################################################################################ 
 
 ## Posts
@@ -267,14 +377,3 @@ plot_grid(sats, avg_sats, boost, n_posts, labels=c("", "", "", ""), ncol = 2, nr
 ggsave("images/post_types.png", width=7, height=4)
 
 
-
-## Comments 
-
-
-
-
-## Links
-
-
-
-#remove(list=ls())
