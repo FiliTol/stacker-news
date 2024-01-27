@@ -10,10 +10,10 @@ from tqdm import tqdm
 import sqlite3
 
 
-# Sampling the items to scrape
-from random import sample
-
-sampled_items = sample([*range(1, 250000)], 1000)
+## Sampling the items to scrape
+#from random import sample
+#
+#sampled_items = sample([*range(1, 250000)], 1000)
 
 # Queries for entry insertion in tables
 insert_comment = """
@@ -59,8 +59,8 @@ INSERT OR IGNORE INTO exceptions (
 conn = sqlite3.connect("data/stacker_news.sqlite")
 cur = conn.cursor()
 
-# Loop for item scraping
-for i in tqdm(sampled_items):
+# Loop for item scraping from item 1 to item 270000
+for i in tqdm([*range(1, 270001)]):
     try:
         # Provided a string returns a bs4.BeautifulSoup object
         url_posts = f"https://stacker.news/items/{i}"

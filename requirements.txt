@@ -8,10 +8,12 @@ attrs==23.1.0
 Babel==2.13.0
 backcall==0.2.0
 beautifulsoup4==4.12.2
+black==23.10.1
 bleach==6.0.0
 certifi==2023.7.22
 cffi==1.16.0
 charset-normalizer==3.3.0
+click==8.1.7
 comm==0.1.4
 debugpy==1.8.0
 decorator==5.1.1
@@ -48,6 +50,7 @@ jupyterlab_server==2.25.0
 MarkupSafe==2.1.3
 matplotlib-inline==0.1.6
 mistune==3.0.2
+mypy-extensions==1.0.0
 nbclient==0.8.0
 nbconvert==7.8.0
 nbformat==5.9.2
@@ -61,6 +64,7 @@ packaging==23.2
 pandas==2.1.1
 pandocfilters==1.5.0
 parso==0.8.3
+pathspec==0.11.2
 pexpect==4.8.0
 pickleshare==0.7.5
 platformdirs==3.11.0
@@ -84,6 +88,7 @@ requests==2.31.0
 rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rpds-py==0.10.3
+scripts==2.0
 selenium==4.13.0
 Send2Trash==1.8.2
 six==1.16.0
@@ -91,6 +96,7 @@ sniffio==1.3.0
 sortedcontainers==2.4.0
 soupsieve==2.5
 stack-data==0.6.3
+stua==0.2
 terminado==0.17.1
 texttable==1.7.0
 tinycss2==1.2.1
