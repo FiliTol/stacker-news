@@ -26,21 +26,8 @@ INSERT OR IGNORE INTO user (
     ) values (?, ?, ?, ?, ?)
 """
 
-sql_user = """
-DROP TABLE IF EXISTS user;
-CREATE TABLE user (
-    User TEXT,
-    TotalStacked TEXT,
-    FirstItem TEXT,
-    HatStreak TEXT,
-    NumItems TEXT,
-    PRIMARY KEY (User))
-"""
-
-conn = sqlite3.connect("../data/stacker_news.sqlite")
+conn = sqlite3.connect("data/stacker_news.sqlite")
 cur = conn.cursor()
-
-cur.executescript(sql_user)
 
 sql_query = pd.read_sql(query, conn)
 result = pd.DataFrame(sql_query, columns=["Author"])
@@ -48,13 +35,16 @@ result = pd.DataFrame(sql_query, columns=["Author"])
 for i in tqdm(result["Author"]):
     try:
         profile_data = user.get_profile(i)
-        entry = (
-            str(profile_data[0]),
-            str(profile_data[1]),
-            str(profile_data[2]),
-            str(profile_data[3]),
-            str(profile_data[4]),
-        )
+        try:
+            entry = (
+                str(profile_data[0]),
+                str(profile_data[1]),
+                str(profile_data[2]),
+                str(profile_data[3]),
+                str(profile_data[4]),
+            )
+        except:
+            continue
         try:
             cur.execute(insert_user, entry)
         except:
@@ -62,5 +52,6 @@ for i in tqdm(result["Author"]):
     except:
         continue
 
+conn.commit()
 cur.close()
 conn.close()

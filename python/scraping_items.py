@@ -4,7 +4,7 @@ import requests as requests
 from python import item
 from python import discussion
 from python import link
-import comment
+from python import comment
 from tqdm import tqdm
 import sqlite3
 
