@@ -28,11 +28,28 @@ $ python python/setupDB.py         # Setup SQLite database
 $ python python/scraping_items.py  # Scrape forum items
 $ python python/scraping_users.py  # Scrape user profiles
 ```
+### R packages
 
 It is suggested to execute `R` scripts using the Rstudio sotfware and open the folder in Rstudio as an Rproject (by 
 opening the `stacker_news.Rproj` file).
 At the execution of every `.R` script, a function will verify if the needed packages are installed: if not then it 
 procedes to install them, if installed they are imported in the environment.
+
+#### Alternative installation of R packages
+
+In order to sync all the packages and `R` requirements, is also possible to use the renv tools provided by Rstudio.
+Open the project file with Rstudio, navigate to the *tools* settings and open the *project options*.
+There, navigate to the *environments* section end activate the setting *Use renv for this project*.
+
+The `R` session will restart. Then, navigate to the console and type the following command:
+
+```{R}
+renv::init()
+```
+
+This command will ask for a choice in the renv management, select the option to restore the project from the lockfile.
+Rstudio will then proceed to install all the R packages needed.
+
 
 These steps reproduce exactly the environment and dataset used to produce this research.
 
