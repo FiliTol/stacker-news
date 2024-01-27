@@ -1,8 +1,18 @@
 import re
-from scripts import item
+from python import item
 
 
 NA = None
+
+
+# Function that extracts the item title from the provided page
+def extract_title(page):
+    # Produces a string
+    try:
+        title = page.find("a", class_="item_title__FH7AS text-reset me-2").get_text()
+    except:
+        title = NA
+    return title
 
 
 # Function that extracts the item banner from the provided page

@@ -1,9 +1,5 @@
-from bs4 import BeautifulSoup
-import requests as requests
 import re
-from datetime import datetime
-from scripts import item
-import csv
+from python import item
 
 
 NA = None

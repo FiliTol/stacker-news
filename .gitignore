@@ -11,12 +11,12 @@ tests/
 qodana.yaml
 stacker_news.sqlite
 outputs/
-scripts/R/analysis.R
-scripts/R/periods
+R/analysis.R
+R/periods
 old_README
-scripts/R/overview/general_graph.R
-scripts/R/overview/graphs_timeline.R
-scripts/R/overview/analysis.R
-scripts/R/temporal_SNA.R
+R/overview/general_graph.R
+R/overview/graphs_timeline.R
+R/overview/analysis.R
+R/temporal_SNA.R
 README.md.backup
 

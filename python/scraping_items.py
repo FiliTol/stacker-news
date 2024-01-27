@@ -1,10 +1,9 @@
 import time
-
 from bs4 import BeautifulSoup
 import requests as requests
-import item
-import discussion
-import link
+from python import item
+from python import discussion
+from python import link
 import comment
 from tqdm import tqdm
 import sqlite3

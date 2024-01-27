@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests as requests
 import re
-import sqlite3
 
 
 # Setup user table in the SQLite database
