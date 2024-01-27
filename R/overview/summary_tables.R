@@ -1,14 +1,26 @@
-library(data.table)
-library(igraph)
-library(ggplot2)
-#library(stringr)
-library(lubridate)
-library(tidyverse)
-library(dplyr)
-library(forcats)
-library(gridExtra)
-library(kableExtra)
-library(cowplot)
+# List of packages to check and import
+packages <- c("data.table", "igraph", "ggplot2", "lubridate", "tidyverse", 
+              "dplyr", "forcats", "gridExtra", "kableExtra", "cowplot")
+
+# Function to check and import packages
+check_and_import <- function(package_name) {
+  # Check if the package is installed
+  if (!require(package_name, character.only = TRUE)) {
+    # If not installed, install it
+    install.packages(package_name)
+    # Load the package after installation
+    library(package_name, character.only = TRUE)
+  } else {
+    # If already installed, just load the package
+    library(package_name, character.only = TRUE)
+  }
+}
+
+# Loop through the list of packages
+for (pkg in packages) {
+  check_and_import(pkg)
+}
+
 
 #' # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')

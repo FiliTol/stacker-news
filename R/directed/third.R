@@ -1,11 +1,22 @@
-library(data.table)
-library(igraph)
-library(ggplot2)
-library(lubridate)
-library(tidyverse)
-library(RColorBrewer)
-library(ggrepel)
+# List of packages
+packages <- c("data.table", "igraph", "ggplot2", "lubridate", "tidyverse", 
+              "RColorBrewer", "ggrepel")
 
+# Function to check and import packages
+check_and_import <- function(package_name) {
+  # Check if the package is installed
+  if (!requireNamespace(package_name, quietly = TRUE)) {
+    # If not installed, install it
+    install.packages(package_name)
+  }
+  # Load the package
+  library(package_name, character.only = TRUE)
+}
+
+# Loop through the list of packages
+for (pkg in packages) {
+  check_and_import(pkg)
+}
 
 # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')
