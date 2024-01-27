@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 
 # Queries for table insertion
@@ -54,6 +55,11 @@ CREATE TABLE user (
     NumItems TEXT,
     PRIMARY KEY (User))
 """
+
+# Create data folder if not existing
+data_folder = r'data/'
+if not os.path.exists(data_folder):
+    os.makedirs(data_folder)
 
 # Create database connection
 conn = sqlite3.connect("data/stacker_news.sqlite")
