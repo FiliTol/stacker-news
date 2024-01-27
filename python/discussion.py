@@ -1,5 +1,5 @@
 import re
-from python import item
+import item
 
 
 NA = None

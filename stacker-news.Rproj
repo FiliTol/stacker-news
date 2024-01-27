@@ -15,5 +15,5 @@ LaTeX: pdfLaTeX
 AutoAppendNewline: Yes
 
 PythonType: virtualenv
-PythonVersion: 3.11.5
+PythonVersion: 3.11.6
 PythonPath: venv/bin/python

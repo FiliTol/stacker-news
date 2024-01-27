@@ -1,10 +1,10 @@
 import time
 from bs4 import BeautifulSoup
 import requests as requests
-from python import item
-from python import discussion
-from python import link
-from python import comment
+import item
+import discussion
+import link
+import comment
 from tqdm import tqdm
 import sqlite3
 
@@ -12,7 +12,7 @@ import sqlite3
 ## Sampling the items to scrape
 #from random import sample
 #
-#sampled_items = sample([*range(1, 250000)], 1000)
+#sampled_items = sample([*range(1, 270000)], 1000)
 
 # Queries for entry insertion in tables
 insert_comment = """

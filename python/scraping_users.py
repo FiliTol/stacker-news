@@ -1,4 +1,4 @@
-from python import user
+import user
 from tqdm import tqdm
 import sqlite3
 import pandas as pd
