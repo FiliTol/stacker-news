@@ -65,7 +65,7 @@ The `directed` folder contains all the code used for the social network analysis
 contains the procedures to reproduce the general graph section. The numbered scripts are referred to the
 five periods analysed to setup the final table of the paper.
 
-```angular2html
+```
 R
 ├── directed
 │ ├── directed_general.R
@@ -123,6 +123,9 @@ The `post`, `comments` and `users` files are copies of the respective `data.tabl
 correspond to `data.table` objects referring to the comments table (partitioned into periods); files starting by 'p' are
 referring to the posts table (partitioned into periods).
 
+### Images
+
+The execution of the `R` scripts generates some plot images, used for exploratory analysis. The images will be generated inside an `images/` folder.
 
 
 
