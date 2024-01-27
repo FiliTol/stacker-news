@@ -1,16 +1,12 @@
 library(data.table)
 library(igraph)
 library(ggplot2)
-#library(stringr)
 library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
 library(dplyr)
 
-# Used for community detection
-library(gmp)
-library(slam)
 
 set.seed(879597)
 

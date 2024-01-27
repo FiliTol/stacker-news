@@ -1,15 +1,11 @@
 library(data.table)
 library(igraph)
 library(ggplot2)
-#library(stringr)
 library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
 
-# Used for community detection
-library(gmp)
-library(slam)
 
 # Load RDS files
 comments <- readRDS(file = 'RDS_files/comments')

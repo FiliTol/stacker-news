@@ -4,7 +4,6 @@ library(ggplot2)
 library(dplyr)
 library(stringr)
 library(lubridate)
-#install.packages("tidyverse")
 library(tidyverse)
 library(RColorBrewer)
 library(ggrepel)
@@ -236,25 +235,6 @@ ggsave('images/directed/general/general_contributors_degree.png')
 
 
 ##############################################################################
-# Plot degree distribution of all users
-# degree_tab %>%
-#   filter(totstacked>1000000) %>%
-#   #mutate(normalized = (totstacked - mean(totstacked)) / sd(totstacked) ) %>%
-#   ggplot(aes(x = in_degr, y = out_degr))+
-#   geom_point(aes(size = totstacked,
-#                  #alpha = normalized,
-#                  color = role))+
-#   geom_label_repel(aes(
-#     label = ifelse(totstacked>1000000, author, '')),
-#     force = 1,
-#     box.padding   = 5, 
-#     point.padding = 0.5,
-#     segment.color = 'grey50',
-#     max.overlaps = 6000)+
-#   labs(x = "In-degree", y = " Out-degree",
-#        title = "Forum users in-degree and out-degree",
-#        subtitle = "Users with more than 1mln sats stacked")+
-#   theme_classic()
 
 ### Probability table for in-degree
 # This shows the fact that only 1% of the users have a in-degree bigger than 10
@@ -267,93 +247,6 @@ sum(ifelse(degree_tab$out_degr > 10, 1, 0))/length(degree_tab$out_degr)
 ### Probability table for total_degree
 # This shows that only 5.7% of users scored +50 degree in both in and out degree
 sum(ifelse(degree_tab$out_degr > 10 & degree_tab$in_degr > 10, 1, 0))/length(degree_tab$out_degr)
-
-# Placing the red lines at in-degree=10 and out-degree=10 we visualize the 1% of users
-# by degree distribution
-# degree_tab %>%
-#   filter(totstacked > 100000) %>%
-#   mutate(normalized_rewards = (rewards - min(rewards)) / (max(rewards) - min(rewards)),
-#          col_totstacked = ifelse(totstacked > 1000000, '+1mln', '100k - 1mln')) %>%
-#   ggplot(aes(x = in_degr, y = out_degr))+
-#   geom_point(aes(size = normalized_rewards,
-#                  color = col_totstacked))+
-#   geom_hline(yintercept = 10, color = 'red')+
-#   geom_vline(xintercept = 10, color = 'red')+
-#   geom_label_repel(aes(
-#     label = ifelse(totstacked>1000000, author, '')),
-#     force = 1,
-#     box.padding   = 5, 
-#     point.padding = 0.5,
-#     segment.color = 'grey50',
-#     max.overlaps = 6000)+
-#   labs(x = "In-degree", y = " Out-degree",
-#        title = "Forum users in-degree and out-degree",
-#        subtitle = "Rewards for users with more than 100k sats stacked")+
-#   theme_classic() +
-#   scale_y_log10() +
-#   scale_x_log10()
-# 
-# ggsave('images/directed/general/rewards_nodes_degree.png')
-
-## There are some anomalies in this graph. First of all the user 'utxoclub' seems to have +1mln of stacked sats all deriving from a single comment (item 84146). That could ben example of fat fingering and the user is legit because he/she has not been jailed.
-## Indeed utxoclub is an outlier, just as 'tech5'. 'anarkio' seem to have achieved all his/her sats from a single comment (item 12115) that was probably well rewarded by the network. Overall 'anarkio' profile seems legit, with several comments and posts that stacked big amounts of sats.
-
-
-# ## Rewards accumulation
-# degree_tab %>%
-#   filter(out_degr > 500 | in_degr > 500) %>%
-#   mutate(normalized_rewards = (rewards - min(rewards)) / (max(rewards) - min(rewards))) %>%
-#   ggplot(aes(x = in_degr, y = out_degr))+
-#   geom_point(aes(size = totstacked,
-#                  color = normalized_rewards))+
-#   geom_label_repel(aes(
-#     label = ifelse(out_degr > 500 | in_degr > 500 , author, '')),
-#     force = 1,
-#     box.padding   = 5,
-#     point.padding = 0.5,
-#     segment.color = 'grey50',
-#     max.overlaps = 6000)+
-#   theme_classic()
-
-
-### Majority of users
-# 
-# degree_tab %>%
-#   filter(totstacked < 1000000) %>%
-#   #mutate(normalized = (totstacked - mean(totstacked)) / sd(totstacked) ) %>%
-#   ggplot(aes(x = in_degr, y = out_degr))+
-#   geom_point(aes(color = role), alpha = 0.3)+
-#   geom_abline(slope=1, intercept = 0, color = 'red') +
-#   #geom_smooth(method = 'lm')+
-#   labs(x = "In-degree", y = " Out-degree",
-#        title = "Forum users in-degree and out-degree",
-#        subtitle = "Users with less than 1mln sats stacked")+
-#   theme_classic() +
-#   scale_y_log10() +
-#   scale_x_log10()
-  
-### All users
-# 
-# degree_tab %>%
-#   ggplot(aes(x = in_degr, y = out_degr))+
-#   geom_point(aes(alpha = totstacked))+
-#   geom_abline(slope = 1, intercept = 0, color = 'red') +
-#   #geom_smooth(method = 'lm')+
-#   geom_label_repel(aes(
-#     label = ifelse(totstacked>500000, author, '')),
-#     force = 1,
-#     box.padding   = 5, 
-#     point.padding = 0.5,
-#     segment.color = 'grey50',
-#     max.overlaps = 6000)+
-#   labs(x = "In-degree", y = " Out-degree",
-#        title = "Forum users in-degree and out-degree",
-#        subtitle = "Labeled users stacked >500k")+
-#   theme_classic() +
-#   scale_y_log10() +
-#   scale_x_log10()
-# 
-# ggsave('images/directed/general/blurred_reward_degree.png')
 
 
 ### Stacked distribution
@@ -711,50 +604,6 @@ ggplot(data = distances_vector)+
 
 ggsave('images/directed/general/general_degree_of_separation.png')
 
-################################################################################
-
-## -----------------------------------------------------------------------------
-## Clustering and partitioning
-
-### Community detection algorithms aim to find the division of a network that maximizes its modularity
-### Modularity ranges from -1 to 1:
-### - Higher modularity score suggests a better division of the network into communities
-### - Positive values indicate a good community structure
-### - Negative values indicate that the network is not well divided into communities
-
-## Transform graph into undirected to compute the several community detection algorithms
-
-# undir_g <- as.undirected(g)
-
-## Betweenness
-# betweenness__ <- betweenness(g, directed = T)
-
-# ggplot()+
-  # geom_point(aes(x = betweenness__, y = degree(g,loops = F,mode = 'in'), color = 'red'))
-  
-# ggplot()+
-  # geom_point(aes(x = betweenness__, y = V(g)$Rewards, color = 'red'))
-
-# ggplot()+
-  # geom_point(aes(x = betweenness__, y = V(g)$Sats, color = 'red'))
-
-
-# ## Betweenness clustering
-# 
-# BetweennessCommunity <- cluster_edge_betweenness(g, weights = NULL, directed = TRUE, modularity = TRUE)
-# 
-# ## Leiden algorithm
-# 
-# LeidenCommunity <- cluster_leiden(undir_g)
-# 
-# length(LeidenCommunity)
-# 
-# 
-# ## Walktrap algorithm
-# 
-# WalktrapCommunity <- cluster_walktrap(g)
-# 
-# length(WalktrapCommunity)
 
 
 
