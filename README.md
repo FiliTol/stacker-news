@@ -9,7 +9,7 @@ of features as *likes* or some sort of other reward scheme could improve custome
 retention and interaction by orders of magnitute.
 
 The following project has the goal to investigate the most rewarding behaviours
-for users interacting in the online forum [Stacker News](stacker.news), an
+for users interacting in the online forum [Stacker News](https://stacker.news), an
 unconventional internet-based forum where likes are replaced by *zaps*, bitcoin
 microtransactions. 
 
