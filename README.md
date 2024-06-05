@@ -22,7 +22,7 @@ More details about the project can be found in the [attached paper](paper.pdf).
 > profiles. This advancements could generate some inconsistencies between the
 > results reported in the paper and the current forum landscape. If you need
 > to reproduce the analysis as carried on by the authors, you're suggested
-> to get in touch with me. My contacts are listed in my [personal website](www.filippotol.in).
+> to get in touch with me. My contacts are listed in my [personal website](https://www.filippotol.in/about/).
 
 In order to reproduce the environment used for the research, the following steps are suggested.
 
