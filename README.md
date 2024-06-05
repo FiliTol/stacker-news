@@ -1,6 +1,28 @@
 # BehaviorBounty
 
-## Reproduce the environment
+Humans, for the most part, behave and act as economic agents driven by [primordial
+incentives](https://en.wikipedia.org/wiki/The_Naked_Ape) or by more sophisticated
+reward schemes. Actions and behaviours carried on in Internet-based contexts (as
+forums, social media, etc) are not exempted from this biological truth. This is
+the reason why social media platforms and forums soon understood that the implementation
+of features as *likes* or some sort of other reward scheme could improve customer
+retention and interaction by orders of magnitute.
+
+The following project has the goal to investigate the most rewarding behaviours
+for users interacting in the online forum [Stacker News](stacker.news), an
+unconventional internet-based forum where likes are replaced by *zaps*, bitcoin
+microtransactions. 
+
+More details about the project can be found in the [attached paper](paper.pdf).
+
+## Reproduce the environment for the analysis
+
+> **Important**: as of june 2024, the Stacker News forum implemented several new
+> features and gave to the users the option to hide some information about their
+> profiles. This advancements could generate some inconsistencies between the
+> results reported in the paper and the current forum landscape. If you need
+> to reproduce the analysis as carried on by the authors, you're suggested
+> to get in touch with me. My contacts are listed in my [personal website](www.filippotol.in).
 
 In order to reproduce the environment used for the research, the following steps are suggested.
 
