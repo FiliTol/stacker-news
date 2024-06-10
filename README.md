@@ -15,6 +15,8 @@ microtransactions.
 
 More details about the project can be found in the [attached paper](paper.pdf).
 
+Co-author: [Alberto Bersan](https://github.com/Bers00)
+
 ## Reproduce the environment for the analysis
 
 > **Important**: as of june 2024, the Stacker News forum implemented several new
