@@ -1,4 +1,4 @@
-# BehaviorBounty
+# Deeping into Stacker News 
 
 Humans, for the most part, behave and act as economic agents driven by [primordial
 incentives](https://en.wikipedia.org/wiki/The_Naked_Ape) or by more sophisticated
